@@ -27,6 +27,7 @@ interface Competition {
   type: string;
   registration_url: string;
   results_url: string;
+  coach_attending: "yes" | "no" | "maybe" | null;
 }
 
 export default function Home() {
@@ -137,7 +138,6 @@ export default function Home() {
           <Card key={comp.id} className="bg-[#FFD700] text-black">
             <CardContent className="px-3 py-1.5">
               <div className="flex justify-between items-start gap-4 text-sm">
-                {/* Date */}
                 <div className="w-28 text-left">
                   <a
                     href={getGoogleCalendarLink(comp.gym?.name + " " + comp.league + " " + comp.type, comp.start_date, comp.end_date, `Competition: ${comp.gym?.name} ${comp.league} ${comp.type}`, comp.gym?.location || '')}
@@ -149,12 +149,10 @@ export default function Home() {
                   </a>
                 </div>
 
-                {/* League + Type */}
                 <div className="flex-1 text-left whitespace-pre-wrap">
                   {comp.league} | {comp.type}
                 </div>
 
-                {/* Gym Name */}
                 <div className="w-32 text-right font-medium break-words">
                   {comp.gym?.location ? (
                     <a
@@ -169,6 +167,10 @@ export default function Home() {
                     comp.gym?.name
                   )}
                 </div>
+              </div>
+
+              <div className="mt-1 text-xs text-left font-semibold">
+                Coach Attending: {comp.coach_attending ? comp.coach_attending.charAt(0).toUpperCase() + comp.coach_attending.slice(1) : "Unknown"}
               </div>
 
               <div className="flex justify-center gap-16 mt-3">
