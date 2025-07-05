@@ -73,7 +73,6 @@ export default function Home() {
     location: string
   ) {
     const start = new Date(startDate).toISOString().replace(/-|:|\.\d+/g, '');
-    // Google Calendar event end date is exclusive, so add 1 day if same-day event or use the end date directly
     const end = new Date(new Date(endDate).getTime() + 24 * 60 * 60 * 1000)
       .toISOString()
       .replace(/-|:|\.\d+/g, '');
@@ -135,59 +134,60 @@ export default function Home() {
         {filteredCompetitions.map((comp) => (
           <Card key={comp.id} className="bg-[#FFD700] text-black">
             <CardContent className="p-2">
-              <div className="flex justify-between items-center gap-4 text-sm">
-                {/* Left block: Date */}
-                <div className="flex-none w-28 text-left">
-                  <a
-                    href={getGoogleCalendarLink(
-                      comp.gym?.name + " " + comp.league + " " + comp.type,
-                      comp.start_date,
-                      comp.end_date,
-                      `Competition: ${comp.gym?.name} ${comp.league} ${comp.type}`,
-                      comp.gym?.location || ''
-                    )}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="underline hover:text-black"
-                  >
-                    {formatDateRange(comp.start_date, comp.end_date)}
-                  </a>
-                </div>
-
-                {/* Middle-left block: League | Type (wrap allowed) */}
-                <div className="flex-1 text-left break-words">
-                  {comp.league} | {comp.type}
-                </div>
-
-                {/* Middle-right block: Gym name right aligned */}
-                <div className="flex-none w-[160px] text-right font-medium break-words">
-                  {comp.gym?.url ? (
+              <div className="flex flex-col gap-1">
+                {/* Top row */}
+                <div className="flex justify-between items-center gap-4 text-sm flex-wrap">
+                  {/* Date */}
+                  <div className="flex-none w-28 text-left">
                     <a
-                      href={comp.gym.url}
+                      href={getGoogleCalendarLink(
+                        comp.gym?.name + " " + comp.league + " " + comp.type,
+                        comp.start_date,
+                        comp.end_date,
+                        `Competition: ${comp.gym?.name} ${comp.league} ${comp.type}`,
+                        comp.gym?.location || ''
+                      )}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="underline hover:text-black"
                     >
-                      {comp.gym.name}
+                      {formatDateRange(comp.start_date, comp.end_date)}
                     </a>
-                  ) : (
-                    comp.gym?.name
-                  )}
+                  </div>
+
+                  {/* League + Type */}
+                  <div className="flex-1 break-words text-left">{comp.league} | {comp.type}</div>
+
+                  {/* Gym name */}
+                  <div className="flex-none text-right font-medium w-[160px]">
+                    {comp.gym?.url ? (
+                      <a
+                        href={comp.gym.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline hover:text-black"
+                      >
+                        {comp.gym.name}
+                      </a>
+                    ) : (
+                      comp.gym?.name
+                    )}
+                  </div>
                 </div>
 
-                {/* Right block: Address clickable */}
-                <div className="flex-none w-48 text-right">
-                  {comp.gym?.location && (
+                {/* Bottom row: Address */}
+                {comp.gym?.location && (
+                  <div className="text-right text-sm">
                     <a
                       href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(comp.gym.location)}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="underline hover:text-black block"
+                      className="underline hover:text-black"
                     >
                       {comp.gym.location}
                     </a>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
