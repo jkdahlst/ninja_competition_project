@@ -135,7 +135,7 @@ export default function Home() {
       <div className="space-y-3">
         {filteredCompetitions.map((comp) => (
           <Card key={comp.id} className="bg-[#FFD700] text-black">
-            <CardContent className="px-3 py-2">
+            <CardContent className="px-3 py-1.5">
               <div className="flex justify-between items-start gap-4 text-sm">
                 {/* Date */}
                 <div className="w-28 text-left">
@@ -155,7 +155,7 @@ export default function Home() {
                 </div>
 
                 {/* Gym Name */}
-                <div className="w-48 text-right font-medium">
+                <div className="w-32 text-right font-medium break-words">
                   {comp.gym?.location ? (
                     <a
                       href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(comp.gym.location)}`}
@@ -171,7 +171,7 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="flex justify-center gap-6 mt-3">
+              <div className="flex justify-center gap-16 mt-3">
                 <Button
                   variant="default"
                   disabled={!comp.registration_url}
