@@ -6,8 +6,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 
-const supabaseUrl = 'https://qibnftewirlspohxagwl.supabase.co';
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFpYm5mdGV3aXJsc3BvaHhhZ3dsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE2MzY3MjYsImV4cCI6MjA2NzIxMjcyNn0.MOnVHh-uqmJ3WDdNIVu2V58AP95KBuRu2mQDz6KdgA4";
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default function Home() {
