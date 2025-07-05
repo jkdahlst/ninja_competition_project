@@ -25,6 +25,8 @@ interface Competition {
   gym: Gym;
   league: string;
   type: string;
+  registration_url: string;
+  results_url: string;
 }
 
 export default function Home() {
@@ -130,21 +132,15 @@ export default function Home() {
         <Button onClick={() => setFilterText("")}>Clear</Button>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-3">
         {filteredCompetitions.map((comp) => (
           <Card key={comp.id} className="bg-[#FFD700] text-black">
-            <CardContent className="p-2">
-              <div className="flex justify-between items-start gap-4 text-sm flex-wrap">
-                {/* Date with Calendar Link */}
-                <div className="flex-none w-28 text-left">
+            <CardContent className="px-3 py-2">
+              <div className="flex justify-between items-start gap-4 text-sm">
+                {/* Date */}
+                <div className="w-28 text-left">
                   <a
-                    href={getGoogleCalendarLink(
-                      comp.gym?.name + " " + comp.league + " " + comp.type,
-                      comp.start_date,
-                      comp.end_date,
-                      `Competition: ${comp.gym?.name} ${comp.league} ${comp.type}`,
-                      comp.gym?.location || ''
-                    )}
+                    href={getGoogleCalendarLink(comp.gym?.name + " " + comp.league + " " + comp.type, comp.start_date, comp.end_date, `Competition: ${comp.gym?.name} ${comp.league} ${comp.type}`, comp.gym?.location || '')}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="underline hover:text-black"
@@ -153,24 +149,43 @@ export default function Home() {
                   </a>
                 </div>
 
-                {/* League and Type */}
-                <div className="flex-1 text-left break-words">
+                {/* League + Type */}
+                <div className="flex-1 text-left whitespace-pre-wrap">
                   {comp.league} | {comp.type}
                 </div>
 
-                {/* Gym name linking to Google Maps */}
-                <div className="flex-none text-right">
-                  {comp.gym?.location && (
+                {/* Gym Name */}
+                <div className="w-48 text-right font-medium">
+                  {comp.gym?.location ? (
                     <a
                       href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(comp.gym.location)}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="underline hover:text-black"
                     >
-                      {comp.gym.name}
+                      {comp.gym?.name}
                     </a>
+                  ) : (
+                    comp.gym?.name
                   )}
                 </div>
+              </div>
+
+              <div className="flex justify-center gap-6 mt-3">
+                <Button
+                  variant="default"
+                  disabled={!comp.registration_url}
+                  onClick={() => comp.registration_url && window.open(comp.registration_url, "_blank")}
+                >
+                  Register
+                </Button>
+                <Button
+                  variant="default"
+                  disabled={!comp.results_url}
+                  onClick={() => comp.results_url && window.open(comp.results_url, "_blank")}
+                >
+                  Results
+                </Button>
               </div>
             </CardContent>
           </Card>
