@@ -46,8 +46,8 @@ export default function Home() {
     const startDate = new Date(start);
     const endDate = new Date(end);
 
-    const options = { month: "short", day: "numeric", year: "numeric" };
-    const shortOptions = { month: "short", day: "numeric" };
+    const options: Intl.DateTimeFormatOptions = { month: "short", day: "numeric", year: "numeric" };
+    const shortOptions: Intl.DateTimeFormatOptions = { month: "short", day: "numeric" };
 
     if (start === end) {
       return startDate.toLocaleDateString(undefined, options);
