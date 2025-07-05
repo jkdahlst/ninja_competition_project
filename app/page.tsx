@@ -5,15 +5,25 @@ import { createClient } from "@supabase/supabase-js";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import Link from "next/link";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+// Define the Competition type
+interface Competition {
+  id: number;
+  name: string;
+  start_date: string;
+  end_date: string;
+  location: string;
+  league: string;
+  type: string;
+}
+
 export default function Home() {
-  const [competitions, setCompetitions] = useState([]);
-  const [filterText, setFilterText] = useState("");
+  const [competitions, setCompetitions] = useState<Competition[]>([]);
 
   useEffect(() => {
     fetchCompetitions();
@@ -27,7 +37,8 @@ export default function Home() {
 
     if (error) console.error("Error loading competitions:", error);
     else {
-      setCompetitions(data);
+      console.log("Competitions fetched:", data);
+      setCompetitions(data as Competition[]);
     }
   }
 
@@ -52,16 +63,6 @@ export default function Home() {
     }
   }
 
-  // Filter competitions by name, location, or league
-  const filteredCompetitions = competitions.filter(({ name, location, league }) => {
-    const search = filterText.toLowerCase();
-    return (
-      name.toLowerCase().includes(search) ||
-      location.toLowerCase().includes(search) ||
-      league.toLowerCase().includes(search)
-    );
-  });
-
   return (
     <main className="p-4 max-w-2xl mx-auto bg-black min-h-screen text-[#FFD700] font-sans">
       <div className="flex items-center justify-center mb-6 gap-4">
@@ -73,29 +74,16 @@ export default function Home() {
         />
         <h1 className="text-2xl font-bold text-[#FFD700] whitespace-nowrap">Upcoming Competitions</h1>
       </div>
-
-      <input
-        type="text"
-        placeholder="Filter competitions by name, location, or league"
-        value={filterText}
-        onChange={(e) => setFilterText(e.target.value)}
-        className="w-full mb-6 p-2 rounded border border-[#FFD700] bg-[#303036] text-[#FFD700]"
-      />
-
       <div className="space-y-4">
-        {filteredCompetitions.length ? (
-          filteredCompetitions.map((comp) => (
-            <Card key={comp.id} className="bg-[#FFD700] text-[#303036]">
-              <CardContent className="p-4">
-                <h2 className="text-lg font-semibold">{comp.name}</h2>
-                <p>{formatDateRange(comp.start_date, comp.end_date)} - {comp.location}</p>
-                <p className="text-sm">League: {comp.league} | Type: {comp.type}</p>
-              </CardContent>
-            </Card>
-          ))
-        ) : (
-          <p className="text-[#FFD700]">No competitions match your search.</p>
-        )}
+        {competitions.map((comp) => (
+          <Card key={comp.id} className="bg-[#FFD700] text-black">
+            <CardContent className="p-4">
+              <h2 className="text-lg font-semibold">{comp.name}</h2>
+              <p>{formatDateRange(comp.start_date, comp.end_date)} - {comp.location}</p>
+              <p className="text-sm">League: {comp.league} | Type: {comp.type}</p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
     </main>
   );
