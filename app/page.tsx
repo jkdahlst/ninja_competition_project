@@ -24,6 +24,7 @@ interface Competition {
 
 export default function Home() {
   const [competitions, setCompetitions] = useState<Competition[]>([]);
+  const [filterText, setFilterText] = useState("");
 
   useEffect(() => {
     fetchCompetitions();
@@ -63,6 +64,15 @@ export default function Home() {
     }
   }
 
+  const filteredCompetitions = competitions.filter(({ name, location, league }) => {
+    const search = filterText.toLowerCase();
+    return (
+      name.toLowerCase().includes(search) ||
+      location.toLowerCase().includes(search) ||
+      league.toLowerCase().includes(search)
+    );
+  });
+
   return (
     <main className="p-4 max-w-2xl mx-auto bg-black min-h-screen text-[#FFD700] font-sans">
       <div className="flex items-center justify-center mb-6 gap-4">
@@ -74,8 +84,19 @@ export default function Home() {
         />
         <h1 className="text-2xl font-bold text-[#FFD700] whitespace-nowrap">Upcoming Competitions</h1>
       </div>
+
+      <div className="mb-6">
+        <input
+          type="text"
+          value={filterText}
+          onChange={(e) => setFilterText(e.target.value)}
+          placeholder="Filter competitions..."
+          className="w-full p-2 rounded bg-[#303036] text-[#FFD700] placeholder-[#999] focus:outline-none"
+        />
+      </div>
+
       <div className="space-y-4">
-        {competitions.map((comp) => (
+        {filteredCompetitions.map((comp) => (
           <Card key={comp.id} className="bg-[#FFD700] text-black">
             <CardContent className="p-4">
               <h2 className="text-lg font-semibold">{comp.name}</h2>
