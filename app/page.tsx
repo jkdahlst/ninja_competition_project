@@ -42,7 +42,7 @@ export default function Home() {
     }
   }
 
-  function formatDateRange(start, end) {
+  function formatDateRange(start: string, end: string) {
     const startDate = new Date(start);
     const endDate = new Date(end);
 
