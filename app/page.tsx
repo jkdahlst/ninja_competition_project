@@ -134,60 +134,43 @@ export default function Home() {
         {filteredCompetitions.map((comp) => (
           <Card key={comp.id} className="bg-[#FFD700] text-black">
             <CardContent className="p-2">
-              <div className="flex flex-col gap-1">
-                {/* Top row */}
-                <div className="flex justify-between items-center gap-4 text-sm flex-wrap">
-                  {/* Date */}
-                  <div className="flex-none w-28 text-left">
-                    <a
-                      href={getGoogleCalendarLink(
-                        comp.gym?.name + " " + comp.league + " " + comp.type,
-                        comp.start_date,
-                        comp.end_date,
-                        `Competition: ${comp.gym?.name} ${comp.league} ${comp.type}`,
-                        comp.gym?.location || ''
-                      )}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="underline hover:text-black"
-                    >
-                      {formatDateRange(comp.start_date, comp.end_date)}
-                    </a>
-                  </div>
-
-                  {/* League + Type */}
-                  <div className="flex-1 break-words text-left">{comp.league} | {comp.type}</div>
-
-                  {/* Gym name */}
-                  <div className="flex-none text-right font-medium w-[160px]">
-                    {comp.gym?.url ? (
-                      <a
-                        href={comp.gym.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="underline hover:text-black"
-                      >
-                        {comp.gym.name}
-                      </a>
-                    ) : (
-                      comp.gym?.name
+              <div className="flex justify-between items-start gap-4 text-sm flex-wrap">
+                {/* Date with Calendar Link */}
+                <div className="flex-none w-28 text-left">
+                  <a
+                    href={getGoogleCalendarLink(
+                      comp.gym?.name + " " + comp.league + " " + comp.type,
+                      comp.start_date,
+                      comp.end_date,
+                      `Competition: ${comp.gym?.name} ${comp.league} ${comp.type}`,
+                      comp.gym?.location || ''
                     )}
-                  </div>
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline hover:text-black"
+                  >
+                    {formatDateRange(comp.start_date, comp.end_date)}
+                  </a>
                 </div>
 
-                {/* Bottom row: Address */}
-                {comp.gym?.location && (
-                  <div className="text-right text-sm">
+                {/* League and Type */}
+                <div className="flex-1 text-left break-words">
+                  {comp.league} | {comp.type}
+                </div>
+
+                {/* Gym name linking to Google Maps */}
+                <div className="flex-none text-right">
+                  {comp.gym?.location && (
                     <a
                       href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(comp.gym.location)}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="underline hover:text-black"
                     >
-                      {comp.gym.location}
+                      {comp.gym.name}
                     </a>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>
