@@ -106,7 +106,7 @@ export default function Home() {
     });
 
   return (
-    <main className="p-4 max-w-2xl mx-auto bg-black min-h-screen text-[#FFD700] font-sans">
+    <main className="p-4 max-w-2xl mx-auto bg-gray-600 min-h-screen text-[#FFD700] font-sans">
       <div className="flex items-center justify-center mb-6 gap-4">
         <Image
           src="https://ninjau.com/wp-content/uploads/2018/09/ninja-u-mobile-logo.png"
