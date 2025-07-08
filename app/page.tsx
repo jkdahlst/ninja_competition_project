@@ -5,6 +5,7 @@ import { createClient } from "@supabase/supabase-js";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import Link from "next/link";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -32,7 +33,10 @@ interface Competition {
 
 export default function Home() {
   const [competitions, setCompetitions] = useState<Competition[]>([]);
-  const [filterText, setFilterText] = useState("");
+  const [selectedLeague, setSelectedLeague] = useState("");
+  const [selectedType, setSelectedType] = useState("");
+  const [leagues, setLeagues] = useState<string[]>([]);
+  const [types, setTypes] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<"upcoming" | "previous">("upcoming");
 
   useEffect(() => {
@@ -45,8 +49,17 @@ export default function Home() {
       .select("*, gym:gyms(*)")
       .order("start_date", { ascending: true });
 
-    if (error) console.error("Error loading competitions:", error);
-    else setCompetitions(data as Competition[]);
+    if (error) {
+      console.error("Error loading competitions:", error);
+    } else {
+      const comps = data as Competition[];
+      setCompetitions(comps);
+
+      const uniqueLeagues = Array.from(new Set(comps.map((c) => c.league))).sort();
+      const uniqueTypes = Array.from(new Set(comps.map((c) => c.type))).sort();
+      setLeagues(uniqueLeagues);
+      setTypes(uniqueTypes);
+    }
   }
 
   function formatDateRange(start: string, end: string) {
@@ -92,12 +105,10 @@ export default function Home() {
 
   const now = new Date();
   const filteredCompetitions = competitions
-    .filter(({ name, gym, league }) => {
-      const search = filterText.toLowerCase();
+    .filter((comp) => {
       return (
-        name.toLowerCase().includes(search) ||
-        gym?.name.toLowerCase().includes(search) ||
-        league.toLowerCase().includes(search)
+        (selectedLeague === "" || comp.league === selectedLeague) &&
+        (selectedType === "" || comp.type === selectedType)
       );
     })
     .filter((comp) => {
@@ -106,7 +117,7 @@ export default function Home() {
     });
 
   return (
-    <main className="p-4 max-w-2xl mx-auto bg-gray-600 min-h-screen text-[#FFD700] font-sans">
+    <main className="p-4 max-w-2xl mx-auto bg-gray-600 min-h-screen text-[#FFE933] font-sans">
       <div className="flex items-center justify-center mb-6 gap-4">
         <Image
           src="https://ninjau.com/wp-content/uploads/2018/09/ninja-u-mobile-logo.png"
@@ -114,7 +125,7 @@ export default function Home() {
           width={128}
           height={128}
         />
-        <h1 className="text-3xl font-bold text-[#FFD700] whitespace-nowrap">Competitions</h1>
+        <h1 className="text-3xl font-bold text-[#FFE933] whitespace-nowrap">Competitions</h1>
       </div>
 
       <div className="mb-4 flex justify-center gap-4">
@@ -122,20 +133,38 @@ export default function Home() {
         <Button variant={activeTab === "previous" ? "secondary" : "default"} onClick={() => setActiveTab("previous")}>Previous</Button>
       </div>
 
-      <div className="mb-6 flex gap-2">
-        <input
-          type="text"
-          value={filterText}
-          onChange={(e) => setFilterText(e.target.value)}
-          placeholder="Filter competitions..."
-          className="flex-1 p-2 rounded bg-[#303036] text-[#FFD700] placeholder-[#999] focus:outline-none"
-        />
-        <Button onClick={() => setFilterText("")}>Clear</Button>
+      <div className="mb-6 flex flex-col sm:flex-row gap-2 items-center">
+        <select
+          value={selectedLeague}
+          onChange={(e) => setSelectedLeague(e.target.value)}
+          className="flex-1 p-2 rounded bg-[#303036] text-[#FFE933] focus:outline-none"
+        >
+          <option value="">All Leagues</option>
+          {leagues.map((league) => (
+            <option key={league} value={league}>{league}</option>
+          ))}
+        </select>
+
+        <select
+          value={selectedType}
+          onChange={(e) => setSelectedType(e.target.value)}
+          className="flex-1 p-2 rounded bg-[#303036] text-[#FFE933] focus:outline-none"
+        >
+          <option value="">All Types</option>
+          {types.map((type) => (
+            <option key={type} value={type}>{type}</option>
+          ))}
+        </select>
+
+        <Button onClick={() => {
+          setSelectedLeague("");
+          setSelectedType("");
+        }}>Clear</Button>
       </div>
 
       <div className="space-y-3">
         {filteredCompetitions.map((comp) => (
-          <Card key={comp.id} className="bg-[#FFD700] text-black">
+          <Card key={comp.id} className="bg-[#FFE933] text-black">
             <CardContent className="px-3 py-1.5">
               <div className="flex justify-between items-start gap-4 text-sm">
                 <div className="w-28 text-left">
@@ -150,7 +179,11 @@ export default function Home() {
                 </div>
 
                 <div className="flex-1 text-left whitespace-pre-wrap">
-                  {comp.league} | {comp.type}
+                  <span className="block">
+                    <Link href={`/league/${comp.league}`} className="underline hover:text-black">
+                      {comp.league}
+                    </Link>{" "}| {comp.type}
+                  </span>
                 </div>
 
                 <div className="w-32 text-right font-medium break-words">
