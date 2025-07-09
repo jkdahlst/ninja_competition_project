@@ -5,8 +5,6 @@ import { createClient } from "@supabase/supabase-js";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
-import Link from "next/link";
-
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -36,6 +34,7 @@ export default function Home() {
   const [competitions, setCompetitions] = useState<Competition[]>([]);
   const [filterText, setFilterText] = useState("");
   const [activeTab, setActiveTab] = useState<"upcoming" | "previous">("upcoming");
+  const [leagues, setLeagues] = useState<string[]>([]);
 
   useEffect(() => {
     fetchCompetitions();
@@ -48,7 +47,12 @@ export default function Home() {
       .order("start_date", { ascending: true });
 
     if (error) console.error("Error loading competitions:", error);
-    else setCompetitions(data as Competition[]);
+    else {
+      const comps = data as Competition[];
+      setCompetitions(comps);
+      const uniqueLeagues = Array.from(new Set(comps.map(c => c.league))).sort();
+      setLeagues(uniqueLeagues);
+    }
   }
 
   function formatDateRange(start: string, end: string) {
@@ -94,10 +98,9 @@ export default function Home() {
 
   const now = new Date();
   const filteredCompetitions = competitions
-.filter(({ league }) => {
-  return filterText === "" || league === filterText;
-})
-
+    .filter(({ league }) => {
+      return filterText === "" || league === filterText;
+    })
     .filter((comp) => {
       const endDate = new Date(comp.end_date);
       return activeTab === "upcoming" ? endDate >= now : endDate < now;
@@ -120,25 +123,19 @@ export default function Home() {
         <Button variant={activeTab === "previous" ? "secondary" : "default"} onClick={() => setActiveTab("previous")}>Previous</Button>
       </div>
 
-<div className="mb-6 flex gap-2 items-center">
-  <select
-    value={filterText}
-    onChange={(e) => setFilterText(e.target.value)}
-    className="flex-1 p-2 rounded bg-[#303036] text-[#FFE933] focus:outline-none"
-  >
-    <option value="">All Leagues</option>
-    <option value="WNL">WNL</option>
-    <option value="NCNS">NCNS</option>
-    <option value="MNS">MNS</option>
-    <option value="NSC">NSC</option>
-    <option value="FINA">FINA</option>
-    <option value="UNAA">UNAA</option>
-    <option value="Barn">Barn</option>
-    <option value="BoC">BoC</option>
-  </select>
-  <Button onClick={() => setFilterText("")}>Clear</Button>
-</div>
-
+      <div className="mb-6 flex gap-2 items-center">
+        <select
+          value={filterText}
+          onChange={(e) => setFilterText(e.target.value)}
+          className="flex-1 p-2 rounded bg-[#303036] text-[#FFE933] focus:outline-none"
+        >
+          <option value="">All Leagues</option>
+          {leagues.map((league) => (
+            <option key={league} value={league}>{league}</option>
+          ))}
+        </select>
+        <Button onClick={() => setFilterText("")}>Clear</Button>
+      </div>
 
       <div className="space-y-3">
         {filteredCompetitions.map((comp) => (
@@ -158,15 +155,8 @@ export default function Home() {
 
                 <div className="flex-1 text-left whitespace-pre-wrap">
                   <span className="block">
-  <Link
-    href={`/league/${comp.league}`}
-    className="underline hover:text-black"
-  >
-    {comp.league}
-  </Link>{" "}
-  | {comp.type}
-</span>
-
+                    {comp.league} | {comp.type}
+                  </span>
                 </div>
 
                 <div className="w-32 text-right font-medium break-words">
