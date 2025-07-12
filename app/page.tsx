@@ -162,7 +162,7 @@ export default function Home() {
                 <div className="w-32 text-right font-medium break-words">
                   {comp.gym?.location ? (
                     <a
-                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(comp.gym.location)}`}
+                      href={comp.gym.google_map_url}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="underline hover:text-black"
