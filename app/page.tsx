@@ -15,6 +15,7 @@ interface Gym {
   name: string;
   url: string;
   location: string;
+  google_map_url: string;
 }
 
 interface Competition {
