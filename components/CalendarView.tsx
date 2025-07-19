@@ -126,7 +126,16 @@ export default function CalendarView({ competitions }: CalendarViewProps) {
         <FullCalendar
           plugins={[dayGridPlugin, interactionPlugin]}
           initialView="dayGridMonth"
+          dayMaxEventRows={true}
+          dayMaxEvents={4} // Allow more stacking before showing "+ more"
           height="auto"
+          eventContent={(arg) => (
+  <div className="text-xs px-1 py-0.5 leading-snug whitespace-normal break-words">
+    {arg.event.title}
+  </div>
+)}
+
+          
           events={
             selectedLeague === "All"
               ? events
