@@ -41,6 +41,43 @@ interface CalendarViewProps {
   competitions: Competition[];
 }
 
+function formatDateRange(startISO: string, endISO: string) {
+  const startDate = new Date(startISO);
+  const endDateRaw = new Date(endISO);
+
+  // Subtract 1 day from the end date to display inclusive range
+  const endDate = new Date(endDateRaw.getTime() - 24 * 60 * 60 * 1000);
+
+  const options: Intl.DateTimeFormatOptions = {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  };
+  const shortOptions: Intl.DateTimeFormatOptions = {
+    month: "short",
+    day: "numeric",
+  };
+
+  if (startDate.toDateString() === endDate.toDateString()) {
+    return startDate.toLocaleDateString(undefined, options);
+  }
+
+  const sameMonth = startDate.getMonth() === endDate.getMonth();
+  const sameYear = startDate.getFullYear() === endDate.getFullYear();
+
+  if (sameMonth && sameYear) {
+    return `${startDate.toLocaleDateString(
+      undefined,
+      shortOptions
+    )}–${endDate.getDate()}, ${endDate.getFullYear()}`;
+  } else {
+    return `${startDate.toLocaleDateString(
+      undefined,
+      shortOptions
+    )}–${endDate.toLocaleDateString(undefined, options)}`;
+  }
+}
+
 export default function CalendarView({ competitions }: CalendarViewProps) {
   const [events, setEvents] = useState<EventInput[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<EventInput | null>(null);
@@ -65,12 +102,12 @@ export default function CalendarView({ competitions }: CalendarViewProps) {
     const formatted = data.map((comp: any) => {
       const start = comp.start_date;
       const endDateObj = new Date(comp.end_date);
-      endDateObj.setDate(endDateObj.getDate() + 1); // add 1 day to end date
+      endDateObj.setDate(endDateObj.getDate() + 1); // add 1 day to end_date for FullCalendar
 
       return {
         title: comp.name,
-        start,
-        end: endDateObj.toISOString().split("T")[0],
+        start: start,
+        end: endDateObj.toISOString().split("T")[0], // add +1 day ISO string (date-only)
         url: comp.registration_url || undefined,
         backgroundColor: leagueColors[comp.league] || "#888",
         borderColor: leagueColors[comp.league] || "#888",
@@ -153,8 +190,8 @@ export default function CalendarView({ competitions }: CalendarViewProps) {
 
             setSelectedEvent({
               title: info.event.title,
-              start: info.event.start?.toISOString() || "",
-              end: info.event.end?.toISOString() || "",
+              start: info.event.start ? info.event.start.toISOString() : "",
+              end: info.event.end ? info.event.end.toISOString() : "",
               url: info.event.url || undefined,
               extendedProps: {
                 league: info.event.extendedProps.league,
@@ -174,39 +211,48 @@ export default function CalendarView({ competitions }: CalendarViewProps) {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded p-6 max-w-md w-full text-black">
               <h2 className="text-xl font-bold mb-4">{selectedEvent.title}</h2>
+
+              {/* Date range as Google Calendar link */}
               <p>
-                <strong>Dates:</strong>{" "}
-                {new Date(selectedEvent.start).toLocaleDateString(undefined, {
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                })}{" "}
-                –{" "}
-                {new Date(selectedEvent.end).toLocaleDateString(undefined, {
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                })}
+                <strong>Dates: </strong>
+                <a
+                  href={getGoogleCalendarLink(
+                    selectedEvent.title,
+                    selectedEvent.start,
+                    selectedEvent.end,
+                    `League: ${
+                      selectedEvent.extendedProps?.league || ""
+                    }\nType: ${selectedEvent.extendedProps?.type || ""}`,
+                    selectedEvent.extendedProps?.location || "",
+                    selectedEvent.extendedProps?.google_map_url || ""
+                  )}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline text-blue-600 hover:text-blue-800"
+                >
+                  {formatDateRange(selectedEvent.start, selectedEvent.end)}
+                </a>
               </p>
 
+              {/* Additional event details */}
               {selectedEvent.extendedProps?.league && (
                 <p>
-                  <strong>League:</strong> {selectedEvent.extendedProps.league}
+                  <strong>League:</strong> {selectedEvent.extendedProps?.league}
                 </p>
               )}
               {selectedEvent.extendedProps?.type && (
                 <p>
-                  <strong>Type:</strong> {selectedEvent.extendedProps.type}
+                  <strong>Type:</strong> {selectedEvent.extendedProps?.type}
                 </p>
               )}
 
               {selectedEvent.extendedProps?.coach_attending !== undefined && (
                 <p className="flex items-center gap-1">
                   <strong>Coach Attending:</strong>
-                  {selectedEvent.extendedProps.coach_attending?.toLowerCase() ===
+                  {selectedEvent.extendedProps?.coach_attending?.toLowerCase() ===
                   "yes" ? (
                     <span className="text-green-600">☑️</span>
-                  ) : selectedEvent.extendedProps.coach_attending?.toLowerCase() ===
+                  ) : selectedEvent.extendedProps?.coach_attending?.toLowerCase() ===
                     "no" ? (
                     <span className="text-gray-500">⬜</span>
                   ) : (
@@ -215,52 +261,43 @@ export default function CalendarView({ competitions }: CalendarViewProps) {
                 </p>
               )}
 
-              {selectedEvent.url && (
-                <p>
+              <div className="flex gap-6 mt-3">
+                {selectedEvent.url && (
                   <a
                     href={selectedEvent.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="underline text-blue-600"
+                    className="underline text-blue-600 hover:text-blue-800 transition-colors"
                   >
                     Registration Link
                   </a>
-                </p>
-              )}
+                )}
 
-              {selectedEvent.extendedProps?.results_url && (
-                <p>
+                {selectedEvent.extendedProps?.results_url && (
                   <a
-                    href={selectedEvent.extendedProps.results_url}
+                    href={selectedEvent.extendedProps?.results_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center underline text-purple-700 hover:text-purple-900"
+                    className="inline-flex items-center underline text-purple-700 hover:text-purple-900 transition-colors"
                   >
-                    View Results&nbsp;📊
+                    View Results&nbsp;
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 inline-block"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M11 17l-5-5m0 0l5-5m-5 5h12"
+                      />
+                    </svg>
                   </a>
-                </p>
-              )}
-
-              {/* Google Calendar Link */}
-              <p>
-                <a
-                  href={getGoogleCalendarLink(
-                    selectedEvent.title,
-                    selectedEvent.start,
-                    selectedEvent.end,
-                    `League: ${selectedEvent.extendedProps?.league || ""}\nType: ${
-                      selectedEvent.extendedProps?.type || ""
-                    }`,
-                    selectedEvent.extendedProps?.location || "",
-                    selectedEvent.extendedProps?.google_map_url || ""
-                  )}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="underline text-blue-600"
-                >
-                  Add to Google Calendar
-                </a>
-              </p>
+                )}
+              </div>
 
               <div className="mt-4 text-right">
                 <button

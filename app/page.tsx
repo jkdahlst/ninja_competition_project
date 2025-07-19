@@ -60,8 +60,9 @@ export default function Home() {
   }
 
   function formatDateRange(start: string, end: string) {
-    const startDate = new Date(start);
-    const endDate = new Date(end);
+    // Force local interpretation by appending 'T12:00' (no time zone shift)
+    const startDate = new Date(start + "T12:00");
+    const endDate = new Date(end + "T12:00");
 
     const options: Intl.DateTimeFormatOptions = {
       month: "short",
@@ -73,7 +74,12 @@ export default function Home() {
       day: "numeric",
     };
 
-    if (start === end) return startDate.toLocaleDateString(undefined, options);
+    const sameDay =
+      startDate.getDate() === endDate.getDate() &&
+      startDate.getMonth() === endDate.getMonth() &&
+      startDate.getFullYear() === endDate.getFullYear();
+
+    if (sameDay) return startDate.toLocaleDateString(undefined, options);
 
     const sameMonth = startDate.getMonth() === endDate.getMonth();
     const sameYear = startDate.getFullYear() === endDate.getFullYear();
