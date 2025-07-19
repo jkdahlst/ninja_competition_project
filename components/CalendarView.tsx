@@ -126,6 +126,7 @@ export default function CalendarView({ competitions }: CalendarViewProps) {
         <FullCalendar
           plugins={[dayGridPlugin, interactionPlugin]}
           initialView="dayGridMonth"
+          height="auto"
           events={
             selectedLeague === "All"
               ? events
