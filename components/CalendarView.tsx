@@ -6,7 +6,7 @@ import interactionPlugin from "@fullcalendar/interaction";
 import { useEffect, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { Competition } from "@/types";
-
+import { getGoogleCalendarLink } from "@/utils/googleCalendar";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -18,11 +18,13 @@ interface EventInput {
   start: string;
   end: string;
   url?: string;
-  league?: string;
-  type?: string;
   extendedProps?: {
     league?: string;
     type?: string;
+    coach_attending?: string;
+    results_url?: string;
+    location?: string;
+    google_map_url?: string;
     [key: string]: any;
   };
 }
@@ -50,9 +52,10 @@ export default function CalendarView({ competitions }: CalendarViewProps) {
   }, []);
 
   async function fetchEvents() {
-    const { data, error } = await supabase
-      .from("competitions")
-      .select("id, name, start_date, end_date, registration_url, league, type");
+    const { data, error } = await supabase.from("competitions").select(
+      `id, name, start_date, end_date, registration_url, league, type, coach_attending, results_url,
+       gym:gyms(name, location, google_map_url)`
+    );
 
     if (error) {
       console.error("Failed to load competitions:", error);
@@ -61,19 +64,23 @@ export default function CalendarView({ competitions }: CalendarViewProps) {
 
     const formatted = data.map((comp: any) => {
       const start = comp.start_date;
-      const end = new Date(comp.end_date);
-      end.setDate(end.getDate() + 1); // add 1 day
+      const endDateObj = new Date(comp.end_date);
+      endDateObj.setDate(endDateObj.getDate() + 1); // add 1 day to end date
 
       return {
         title: comp.name,
         start,
-        end: end.toISOString().split("T")[0], // format as YYYY-MM-DD
+        end: endDateObj.toISOString().split("T")[0],
         url: comp.registration_url || undefined,
-        backgroundColor: leagueColors[comp.league] || "#888", // fallback color
+        backgroundColor: leagueColors[comp.league] || "#888",
         borderColor: leagueColors[comp.league] || "#888",
         extendedProps: {
           league: comp.league,
           type: comp.type,
+          coach_attending: comp.coach_attending,
+          results_url: comp.results_url,
+          location: comp.gym?.location || "",
+          google_map_url: comp.gym?.google_map_url || "",
         },
       };
     });
@@ -127,15 +134,13 @@ export default function CalendarView({ competitions }: CalendarViewProps) {
           plugins={[dayGridPlugin, interactionPlugin]}
           initialView="dayGridMonth"
           dayMaxEventRows={true}
-          dayMaxEvents={4} // Allow more stacking before showing "+ more"
+          dayMaxEvents={4}
           height="auto"
           eventContent={(arg) => (
-  <div className="text-xs px-1 py-0.5 leading-snug whitespace-normal break-words">
-    {arg.event.title}
-  </div>
-)}
-
-          
+            <div className="text-xs px-1 py-0.5 leading-snug whitespace-normal break-words">
+              {arg.event.title}
+            </div>
+          )}
           events={
             selectedLeague === "All"
               ? events
@@ -145,14 +150,22 @@ export default function CalendarView({ competitions }: CalendarViewProps) {
           }
           eventClick={(info) => {
             info.jsEvent.preventDefault();
+
             setSelectedEvent({
               title: info.event.title,
               start: info.event.start?.toISOString() || "",
               end: info.event.end?.toISOString() || "",
               url: info.event.url || undefined,
-              league: info.event.extendedProps.league,
-              type: info.event.extendedProps.type,
+              extendedProps: {
+                league: info.event.extendedProps.league,
+                type: info.event.extendedProps.type,
+                coach_attending: info.event.extendedProps.coach_attending,
+                results_url: info.event.extendedProps.results_url,
+                location: info.event.extendedProps.location,
+                google_map_url: info.event.extendedProps.google_map_url,
+              },
             });
+
             setShowModal(true);
           }}
         />
@@ -176,16 +189,32 @@ export default function CalendarView({ competitions }: CalendarViewProps) {
                 })}
               </p>
 
-              {selectedEvent.league && (
+              {selectedEvent.extendedProps?.league && (
                 <p>
-                  <strong>League:</strong> {selectedEvent.league}
+                  <strong>League:</strong> {selectedEvent.extendedProps.league}
                 </p>
               )}
-              {selectedEvent.type && (
+              {selectedEvent.extendedProps?.type && (
                 <p>
-                  <strong>Type:</strong> {selectedEvent.type}
+                  <strong>Type:</strong> {selectedEvent.extendedProps.type}
                 </p>
               )}
+
+              {selectedEvent.extendedProps?.coach_attending !== undefined && (
+                <p className="flex items-center gap-1">
+                  <strong>Coach Attending:</strong>
+                  {selectedEvent.extendedProps.coach_attending?.toLowerCase() ===
+                  "yes" ? (
+                    <span className="text-green-600">☑️</span>
+                  ) : selectedEvent.extendedProps.coach_attending?.toLowerCase() ===
+                    "no" ? (
+                    <span className="text-gray-500">⬜</span>
+                  ) : (
+                    <span className="text-yellow-500">❓</span>
+                  )}
+                </p>
+              )}
+
               {selectedEvent.url && (
                 <p>
                   <a
@@ -198,6 +227,41 @@ export default function CalendarView({ competitions }: CalendarViewProps) {
                   </a>
                 </p>
               )}
+
+              {selectedEvent.extendedProps?.results_url && (
+                <p>
+                  <a
+                    href={selectedEvent.extendedProps.results_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center underline text-purple-700 hover:text-purple-900"
+                  >
+                    View Results&nbsp;📊
+                  </a>
+                </p>
+              )}
+
+              {/* Google Calendar Link */}
+              <p>
+                <a
+                  href={getGoogleCalendarLink(
+                    selectedEvent.title,
+                    selectedEvent.start,
+                    selectedEvent.end,
+                    `League: ${selectedEvent.extendedProps?.league || ""}\nType: ${
+                      selectedEvent.extendedProps?.type || ""
+                    }`,
+                    selectedEvent.extendedProps?.location || "",
+                    selectedEvent.extendedProps?.google_map_url || ""
+                  )}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline text-blue-600"
+                >
+                  Add to Google Calendar
+                </a>
+              </p>
+
               <div className="mt-4 text-right">
                 <button
                   className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-800"

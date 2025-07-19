@@ -8,7 +8,7 @@ import Image from "next/image";
 import Link from "next/link";
 import PageHeader from "@/components/PageHeader";
 import { Competition } from "@/types";
-
+import { getGoogleCalendarLink } from "@/utils/googleCalendar";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -91,28 +91,6 @@ export default function Home() {
     }
   }
 
-  function getGoogleCalendarLink(
-    name: string,
-    startDate: string,
-    endDate: string,
-    details: string,
-    location: string
-  ) {
-    const start = new Date(startDate).toISOString().replace(/-|:|\.\d+/g, "");
-    const end = new Date(new Date(endDate).getTime() + 24 * 60 * 60 * 1000)
-      .toISOString()
-      .replace(/-|:|\.\d+/g, "");
-
-    const params = new URLSearchParams({
-      text: name,
-      dates: `${start}/${end}`,
-      details,
-      location,
-    });
-
-    return `https://calendar.google.com/calendar/render?action=TEMPLATE&${params.toString()}`;
-  }
-
   const now = new Date();
   const filteredCompetitions = competitions
     .filter(({ league }) => {
@@ -174,7 +152,8 @@ export default function Home() {
                       comp.start_date,
                       comp.end_date,
                       `Competition: ${comp.gym?.name} ${comp.league} ${comp.type}`,
-                      comp.gym?.location || ""
+                      comp.gym?.location || "",
+                      comp.gym?.google_map_url || ""
                     )}
                     target="_blank"
                     rel="noopener noreferrer"
@@ -206,12 +185,15 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="mt-1 text-xs text-left font-semibold">
-                Coach Attending:{" "}
-                {comp.coach_attending
-                  ? comp.coach_attending.charAt(0).toUpperCase() +
-                    comp.coach_attending.slice(1)
-                  : "Unknown"}
+              <div className="mt-1 text-xs text-left font-semibold flex items-center gap-1">
+                Coach Attending:
+                {comp.coach_attending?.toLowerCase() === "yes" ? (
+                  <span className="text-green-600">☑️</span>
+                ) : comp.coach_attending?.toLowerCase() === "no" ? (
+                  <span className="text-gray-500">⬜</span>
+                ) : (
+                  <span className="text-yellow-500">❓</span>
+                )}
               </div>
 
               <div className="flex justify-center gap-16 mt-3">
