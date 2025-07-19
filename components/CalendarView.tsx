@@ -20,6 +20,11 @@ interface EventInput {
   url?: string;
   league?: string;
   type?: string;
+  extendedProps?: {
+    league?: string;
+    type?: string;
+    [key: string]: any;
+  };
 }
 
 const leagueColors: Record<string, string> = {
@@ -121,7 +126,13 @@ export default function CalendarView({ competitions }: CalendarViewProps) {
         <FullCalendar
           plugins={[dayGridPlugin, interactionPlugin]}
           initialView="dayGridMonth"
-          events={events}
+          events={
+            selectedLeague === "All"
+              ? events
+              : events.filter(
+                  (event) => event.extendedProps?.league === selectedLeague
+                )
+          }
           eventClick={(info) => {
             info.jsEvent.preventDefault();
             setSelectedEvent({
@@ -134,13 +145,6 @@ export default function CalendarView({ competitions }: CalendarViewProps) {
             });
             setShowModal(true);
           }}
-          events={
-            selectedLeague === "All"
-              ? events
-              : events.filter(
-                  (event) => event.extendedProps?.league === selectedLeague
-                )
-          }
         />
 
         {showModal && selectedEvent && (
