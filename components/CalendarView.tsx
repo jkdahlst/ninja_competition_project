@@ -82,7 +82,7 @@ export default function CalendarView({ competitions }: CalendarViewProps) {
   }
 
   return (
-    <div className="p-4 max-w-5xl mx-auto bg-gray-600 rounded shadow">
+    <div className="p-4 max-w-5xl mx-auto bg-gray-600 rounded shadow min-h-screen">
       <div className="mb-4 flex flex-wrap gap-2 items-center">
         <span className="mr-2 font-semibold">Filter by League:</span>
 
