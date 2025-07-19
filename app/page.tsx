@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
 import PageHeader from "@/components/PageHeader";
+import { Competition } from "@/types";
+
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -18,19 +20,6 @@ interface Gym {
   url: string;
   location: string;
   google_map_url: string;
-}
-
-interface Competition {
-  id: number;
-  name: string;
-  start_date: string;
-  end_date: string;
-  gym: Gym;
-  league: string;
-  type: string;
-  registration_url: string;
-  results_url: string;
-  coach_attending: "yes" | "no" | "maybe" | null;
 }
 
 export default function Home() {
