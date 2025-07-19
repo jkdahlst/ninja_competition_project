@@ -5,6 +5,8 @@ import { createClient } from "@supabase/supabase-js";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import Link from "next/link";
+import PageHeader from "@/components/PageHeader";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -34,24 +36,36 @@ interface Competition {
 export default function Home() {
   const [competitions, setCompetitions] = useState<Competition[]>([]);
   const [filterText, setFilterText] = useState("");
-  const [activeTab, setActiveTab] = useState<"upcoming" | "previous">("upcoming");
+  const [activeTab, setActiveTab] = useState<"upcoming" | "previous">(
+    "upcoming"
+  );
   const [leagues, setLeagues] = useState<string[]>([]);
 
   useEffect(() => {
     fetchCompetitions();
   }, []);
 
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   async function fetchCompetitions() {
+    setLoading(true);
+    setError(null);
     const { data, error } = await supabase
       .from("competitions")
       .select("*, gym:gyms(*)")
       .order("start_date", { ascending: true });
 
-    if (error) console.error("Error loading competitions:", error);
-    else {
+    setLoading(false);
+    if (error) {
+      setError(error.message);
+      console.error("Error loading competitions:", error);
+    } else {
       const comps = data as Competition[];
       setCompetitions(comps);
-      const uniqueLeagues = Array.from(new Set(comps.map(c => c.league))).sort();
+      const uniqueLeagues = Array.from(
+        new Set(comps.map((c) => c.league))
+      ).sort();
       setLeagues(uniqueLeagues);
     }
   }
@@ -60,8 +74,15 @@ export default function Home() {
     const startDate = new Date(start);
     const endDate = new Date(end);
 
-    const options: Intl.DateTimeFormatOptions = { month: "short", day: "numeric", year: "numeric" };
-    const shortOptions: Intl.DateTimeFormatOptions = { month: "short", day: "numeric" };
+    const options: Intl.DateTimeFormatOptions = {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    };
+    const shortOptions: Intl.DateTimeFormatOptions = {
+      month: "short",
+      day: "numeric",
+    };
 
     if (start === end) return startDate.toLocaleDateString(undefined, options);
 
@@ -69,9 +90,15 @@ export default function Home() {
     const sameYear = startDate.getFullYear() === endDate.getFullYear();
 
     if (sameMonth && sameYear) {
-      return `${startDate.toLocaleDateString(undefined, shortOptions)}–${endDate.getDate()}, ${endDate.getFullYear()}`;
+      return `${startDate.toLocaleDateString(
+        undefined,
+        shortOptions
+      )}–${endDate.getDate()}, ${endDate.getFullYear()}`;
     } else {
-      return `${startDate.toLocaleDateString(undefined, shortOptions)}–${endDate.toLocaleDateString(undefined, options)}`;
+      return `${startDate.toLocaleDateString(
+        undefined,
+        shortOptions
+      )}–${endDate.toLocaleDateString(undefined, options)}`;
     }
   }
 
@@ -82,10 +109,10 @@ export default function Home() {
     details: string,
     location: string
   ) {
-    const start = new Date(startDate).toISOString().replace(/-|:|\.\d+/g, '');
+    const start = new Date(startDate).toISOString().replace(/-|:|\.\d+/g, "");
     const end = new Date(new Date(endDate).getTime() + 24 * 60 * 60 * 1000)
       .toISOString()
-      .replace(/-|:|\.\d+/g, '');
+      .replace(/-|:|\.\d+/g, "");
 
     const params = new URLSearchParams({
       text: name,
@@ -109,19 +136,25 @@ export default function Home() {
 
   return (
     <main className="p-4 max-w-2xl mx-auto bg-gray-600 min-h-screen text-[#FFD700] font-sans">
-      <div className="flex items-center justify-center mb-6 gap-4">
-        <Image
-          src="https://ninjau.com/wp-content/uploads/2018/09/ninja-u-mobile-logo.png"
-          alt="NinjaU Logo"
-          width={128}
-          height={128}
-        />
-        <h1 className="text-3xl font-bold text-[#FFE933] whitespace-nowrap">Competitions</h1>
-      </div>
+      <PageHeader
+        title="Competitions"
+        buttonLabel="Calendar View"
+        buttonHref="/calendar"
+      />
 
       <div className="mb-4 flex justify-center gap-4">
-        <Button variant={activeTab === "upcoming" ? "secondary" : "default"} onClick={() => setActiveTab("upcoming")}>Upcoming</Button>
-        <Button variant={activeTab === "previous" ? "secondary" : "default"} onClick={() => setActiveTab("previous")}>Previous</Button>
+        <Button
+          variant={activeTab === "upcoming" ? "secondary" : "default"}
+          onClick={() => setActiveTab("upcoming")}
+        >
+          Upcoming
+        </Button>
+        <Button
+          variant={activeTab === "previous" ? "secondary" : "default"}
+          onClick={() => setActiveTab("previous")}
+        >
+          Previous
+        </Button>
       </div>
 
       <div className="mb-6 flex gap-2 items-center">
@@ -132,7 +165,9 @@ export default function Home() {
         >
           <option value="">All Leagues</option>
           {leagues.map((league) => (
-            <option key={league} value={league}>{league}</option>
+            <option key={league} value={league}>
+              {league}
+            </option>
           ))}
         </select>
         <Button onClick={() => setFilterText("")}>Clear</Button>
@@ -145,7 +180,13 @@ export default function Home() {
               <div className="flex justify-between items-start gap-4 text-sm">
                 <div className="w-28 text-left">
                   <a
-                    href={getGoogleCalendarLink(comp.gym?.name + " " + comp.league + " " + comp.type, comp.start_date, comp.end_date, `Competition: ${comp.gym?.name} ${comp.league} ${comp.type}`, comp.gym?.location || '')}
+                    href={getGoogleCalendarLink(
+                      comp.gym?.name + " " + comp.league + " " + comp.type,
+                      comp.start_date,
+                      comp.end_date,
+                      `Competition: ${comp.gym?.name} ${comp.league} ${comp.type}`,
+                      comp.gym?.location || ""
+                    )}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="underline hover:text-black"
@@ -177,21 +218,30 @@ export default function Home() {
               </div>
 
               <div className="mt-1 text-xs text-left font-semibold">
-                Coach Attending: {comp.coach_attending ? comp.coach_attending.charAt(0).toUpperCase() + comp.coach_attending.slice(1) : "Unknown"}
+                Coach Attending:{" "}
+                {comp.coach_attending
+                  ? comp.coach_attending.charAt(0).toUpperCase() +
+                    comp.coach_attending.slice(1)
+                  : "Unknown"}
               </div>
 
               <div className="flex justify-center gap-16 mt-3">
                 <Button
                   variant="default"
                   disabled={!comp.registration_url}
-                  onClick={() => comp.registration_url && window.open(comp.registration_url, "_blank")}
+                  onClick={() =>
+                    comp.registration_url &&
+                    window.open(comp.registration_url, "_blank")
+                  }
                 >
                   Register
                 </Button>
                 <Button
                   variant="default"
                   disabled={!comp.results_url}
-                  onClick={() => comp.results_url && window.open(comp.results_url, "_blank")}
+                  onClick={() =>
+                    comp.results_url && window.open(comp.results_url, "_blank")
+                  }
                 >
                   Results
                 </Button>
