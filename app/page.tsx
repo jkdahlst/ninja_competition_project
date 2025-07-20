@@ -4,11 +4,13 @@ import { useEffect, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Settings } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import PageHeader from "@/components/PageHeader";
 import { Competition } from "@/types";
 import { getGoogleCalendarLink } from "@/utils/googleCalendar";
+import { useUser } from "@/context/UserContext";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -34,18 +36,20 @@ export default function Home() {
     fetchCompetitions();
   }, []);
 
-  const [loading, setLoading] = useState(false);
+  const [dataLoading, setDataLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const { isAdmin, loading: userLoading } = useUser();
+
   async function fetchCompetitions() {
-    setLoading(true);
+    setDataLoading(true);
     setError(null);
     const { data, error } = await supabase
       .from("competitions")
       .select("*, gym:gyms(*)")
       .order("start_date", { ascending: true });
 
-    setLoading(false);
+    setDataLoading(false);
     if (error) {
       setError(error.message);
       console.error("Error loading competitions:", error);
@@ -107,15 +111,18 @@ export default function Home() {
       return activeTab === "upcoming" ? endDate >= now : endDate < now;
     });
 
+  if (userLoading) return null;
+
   return (
     <main className="p-4 max-w-2xl mx-auto bg-gray-600 min-h-screen text-[#FFD700] font-sans">
       <PageHeader
         title="Competitions"
         buttonLabel="Calendar View"
         buttonHref="/calendar"
+        isAdmin={isAdmin}
       />
 
-      <div className="mb-4 flex justify-center gap-4">
+      <div className="mb-4 flex justify-center items-center gap-4">
         <Button
           variant={activeTab === "upcoming" ? "secondary" : "default"}
           onClick={() => setActiveTab("upcoming")}
@@ -148,7 +155,7 @@ export default function Home() {
 
       <div className="space-y-3">
         {filteredCompetitions.map((comp) => (
-          <Card key={comp.id} className="bg-[#FFE933] text-black">
+          <Card key={comp.id} className="bg-[#FFE933] text-black relative">
             <CardContent className="px-3 py-1.5">
               <div className="flex justify-between items-start gap-4 text-sm">
                 <div className="w-28 text-left">
@@ -223,6 +230,14 @@ export default function Home() {
                   Results
                 </Button>
               </div>
+
+              {isAdmin && (
+  <div className="absolute bottom-2 right-2 z-10">
+    <Link href={`/edit/${comp.id}`}>
+      <Settings className="w-5 h-5 text-gray-400 hover:text-yellow-400 cursor-pointer" />
+    </Link>
+  </div>
+)}
             </CardContent>
           </Card>
         ))}

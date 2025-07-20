@@ -1,8 +1,12 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
+module.exports = {
   images: {
-    domains: ['ninjau.com'],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "ninjau.com",
+        port: "",
+        pathname: "/wp-content/uploads/2018/09/**",
+      },
+    ],
   },
 };
-
-module.exports = nextConfig;
