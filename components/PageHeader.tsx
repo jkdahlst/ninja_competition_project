@@ -45,7 +45,7 @@ export default function PageHeader({
 
       {/* Centered Logo + Title */}
       <div className="flex items-center justify-center mb-6 gap-4">
-        <Image src={logoUrl} alt="NinjaU Logo" width={128} height={128} style={{ height: "auto", width: "100%" }} priority/>
+        <Image src={logoUrl} alt="NinjaU Logo" width={128} height={128} priority/>
         <h1 className="text-3xl font-bold text-[#FFE933] whitespace-nowrap">
           {title}
         </h1>
