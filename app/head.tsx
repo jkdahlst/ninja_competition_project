@@ -3,6 +3,7 @@ export default function Head() {
     <>
       <title>N\U Comps</title>
       <meta name="description" content="Manage NinjaƱ competitions with ease." />
+      <meta name="apple-mobile-web-app-title" content="N\U Comps" />
       <link rel="manifest" href="/manifest.json" />
       <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-180x180.png" />
       <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192x192.png" />
