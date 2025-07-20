@@ -25,9 +25,21 @@ export default function LoginPage() {
     if (error) {
       setErrorMsg(error.message);
     } else {
-      // successful login: page reload or redirect can happen here
-      window.location.href = "/"; // or wherever
+      window.location.href = "/";
     }
+  }
+
+  async function handleGoogleLogin() {
+    setLoading(true);
+    setErrorMsg("");
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+    });
+    setLoading(false);
+    if (error) {
+      setErrorMsg(error.message);
+    }
+    // No redirect needed here — Supabase redirects automatically
   }
 
   return (
@@ -50,10 +62,21 @@ export default function LoginPage() {
       <button
         onClick={handleLogin}
         disabled={loading}
-        className="w-full p-2 bg-yellow-500 hover:bg-yellow-600 rounded text-black font-bold"
+        className="w-full p-2 bg-yellow-500 hover:bg-yellow-600 rounded text-black font-bold mb-3"
       >
         {loading ? "Logging in..." : "Log In"}
       </button>
+
+      <div className="text-center my-4 text-yellow-300">or</div>
+
+      <button
+        onClick={handleGoogleLogin}
+        disabled={loading}
+        className="w-full p-2 bg-blue-600 hover:bg-blue-700 rounded text-white font-bold"
+      >
+        {loading ? "Loading..." : "Sign in with Google"}
+      </button>
+
       {errorMsg && <p className="mt-3 text-red-500">{errorMsg}</p>}
     </div>
   );

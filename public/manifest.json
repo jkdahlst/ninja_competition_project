@@ -1,0 +1,11 @@
+{
+  "name": "Ninja Competition App",
+  "short_name": "N\\U",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#303036",
+  "theme_color": "#FFD700",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }
+  ]
+}
