@@ -31,6 +31,8 @@ export default function Home() {
     "upcoming"
   );
   const [leagues, setLeagues] = useState<string[]>([]);
+  const [types, setTypes] = useState<string[]>([]);
+  const [typeFilter, setTypeFilter] = useState("");
 
   useEffect(() => {
     fetchCompetitions();
@@ -59,7 +61,10 @@ export default function Home() {
       const uniqueLeagues = Array.from(
         new Set(comps.map((c) => c.league))
       ).sort();
+      
+      const uniqueTypes = Array.from(new Set(comps.map((c) => c.type))).sort();
       setLeagues(uniqueLeagues);
+      setTypes(uniqueTypes);
     }
   }
 
@@ -103,8 +108,10 @@ export default function Home() {
 
   const now = new Date();
   const filteredCompetitions = competitions
-    .filter(({ league }) => {
-      return filterText === "" || league === filterText;
+    .filter(({ league, type }) => {
+      const leagueMatches = filterText === "" || league === filterText;
+      const typeMatches = typeFilter === "" || type === typeFilter;
+      return leagueMatches && typeMatches;
     })
     .filter((comp) => {
       const endDate = new Date(comp.end_date);
@@ -150,7 +157,26 @@ export default function Home() {
             </option>
           ))}
         </select>
-        <Button onClick={() => setFilterText("")}>Clear</Button>
+
+        <select
+          value={typeFilter}
+          onChange={(e) => setTypeFilter(e.target.value)}
+          className="flex-1 p-2 rounded bg-[#303036] text-[#FFE933] focus:outline-none"
+        >
+          <option value="">All Types</option>
+          {types.map((type) => (
+            <option key={type} value={type}>
+              {type}
+            </option>
+          ))}
+        </select>
+
+        <Button onClick={() => {
+          setFilterText("");
+          setTypeFilter("");
+        }}>
+          Clear
+        </Button>
       </div>
 
       <div className="space-y-3">

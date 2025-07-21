@@ -14,12 +14,15 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Ninja\U Competition App",
+  title: "N\U Comps",
   description: "Manage Ninja\U competitions with ease.",
   icons: {
-    icon: "/icons/icon-192x192.png", // Favicon
+    icon: "/icons/icon-192x192.png",
+    apple: "/icons/icon-180x180.png", // 180x180 recommended
   },
 };
+
+
 export default function RootLayout({
   children,
 }: Readonly<{
