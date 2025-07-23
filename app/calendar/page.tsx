@@ -33,8 +33,8 @@ export default function CalendarPage() {
   return (
     <main className="p-4 max-w-5xl mx-auto bg-gray-600 min-h-screen text-[#FFF229] font-sans">
       <PageHeader
-        title="Competitions"
-        buttonLabel="Back to List"
+        title=""
+        buttonLabel="List"
         buttonHref="/"
       />
 

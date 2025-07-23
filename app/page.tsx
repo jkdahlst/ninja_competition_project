@@ -123,8 +123,8 @@ export default function Home() {
   return (
     <main className="p-4 max-w-2xl mx-auto bg-gray-600 min-h-screen text-[#FFF229] font-sans">
       <PageHeader
-        title="Competitions"
-        buttonLabel="Calendar View"
+        title=""
+        buttonLabel="Calendar"
         buttonHref="/calendar"
         isAdmin={isAdmin}
       />
