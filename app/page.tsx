@@ -121,7 +121,7 @@ export default function Home() {
   if (userLoading) return null;
 
   return (
-    <main className="p-4 max-w-2xl mx-auto bg-gray-600 min-h-screen text-[#FFD700] font-sans">
+    <main className="p-4 max-w-2xl mx-auto bg-gray-600 min-h-screen text-[#FFF229] font-sans">
       <PageHeader
         title="Competitions"
         buttonLabel="Calendar View"
@@ -148,7 +148,7 @@ export default function Home() {
         <select
           value={filterText}
           onChange={(e) => setFilterText(e.target.value)}
-          className="flex-1 p-2 rounded bg-[#303036] text-[#FFE933] focus:outline-none"
+          className="flex-1 p-2 rounded bg-[#303038] text-[#FFF229] focus:outline-none"
         >
           <option value="">All Leagues</option>
           {leagues.map((league) => (
@@ -161,7 +161,7 @@ export default function Home() {
         <select
           value={typeFilter}
           onChange={(e) => setTypeFilter(e.target.value)}
-          className="flex-1 p-2 rounded bg-[#303036] text-[#FFE933] focus:outline-none"
+          className="flex-1 p-2 rounded bg-[#303038] text-[#FFF229] focus:outline-none"
         >
           <option value="">All Types</option>
           {types.map((type) => (
@@ -181,7 +181,7 @@ export default function Home() {
 
       <div className="space-y-3">
         {filteredCompetitions.map((comp) => (
-          <Card key={comp.id} className="bg-[#FFE933] text-black relative">
+          <Card key={comp.id} className="bg-[#FFF229] text-[#303038]">
             <CardContent className="px-3 py-1.5">
               <div className="flex justify-between items-start gap-4 text-sm">
                 <div className="w-28 text-left">
@@ -258,12 +258,12 @@ export default function Home() {
               </div>
 
               {isAdmin && (
-  <div className="absolute bottom-2 right-2 z-10">
-    <Link href={`/edit/${comp.id}`}>
-      <Settings className="w-5 h-5 text-gray-400 hover:text-yellow-400 cursor-pointer" />
-    </Link>
-  </div>
-)}
+                <div className="absolute bottom-2 right-2 z-10">
+                  <Link href={`/edit/${comp.id}`}>
+                    <Settings className="w-5 h-5 text-gray-400 hover:text-[#FFF229] cursor-pointer" />
+                  </Link>
+                </div>
+              )}
             </CardContent>
           </Card>
         ))}

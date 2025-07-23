@@ -140,8 +140,8 @@ export default function CompetitionForm({ id }: CompetitionFormProps) {
   if (loading) return <div className="p-4 text-white">Loading...</div>;
 
   return (
-    <main className="p-6 max-w-xl mx-auto bg-gray-600 text-[#FFD700] font-sans min-h-screen">
-      <h1 className="text-3xl font-bold mb-6 text-center text-[#FFE933]">
+    <main className="p-6 max-w-xl mx-auto bg-gray-600 text-[#FFF229] font-sans min-h-screen">
+      <h1 className="text-3xl font-bold mb-6 text-center text-[#FFF229]">
         {id ? "Edit Competition" : "Create Competition"}
       </h1>
 
@@ -191,7 +191,7 @@ export default function CompetitionForm({ id }: CompetitionFormProps) {
             onChange={(e) =>
               setFormState({ ...formState, gym: Number(e.target.value) })
             }
-            className="w-full p-2 rounded bg-[#303036] text-white"
+            className="w-full p-2 rounded bg-[#303038] text-white"
           >
             <option value="">Select a gym</option>
             {gyms.map((gym) => (
@@ -210,7 +210,7 @@ export default function CompetitionForm({ id }: CompetitionFormProps) {
             onChange={(e) =>
               setFormState({ ...formState, league: e.target.value })
             }
-            className="w-full p-2 rounded bg-[#303036] text-white"
+            className="w-full p-2 rounded bg-[#303038] text-white"
           >
             <option value="">Select League</option>
             {leagueOptions.map((league) => (
@@ -265,7 +265,7 @@ export default function CompetitionForm({ id }: CompetitionFormProps) {
                 coach_attending: e.target.value as "yes" | "no" | "maybe",
               })
             }
-            className="w-full p-2 rounded bg-[#303036] text-white"
+            className="w-full p-2 rounded bg-[#303038] text-white"
           >
             <option value="">Select</option>
             <option value="yes">Yes</option>
