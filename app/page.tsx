@@ -181,7 +181,7 @@ export default function Home() {
 
       <div className="space-y-3">
         {filteredCompetitions.map((comp) => (
-          <Card key={comp.id} className="bg-[#FFF229] text-[#303038]">
+          <Card key={comp.id} className="bg-[#FFF229] text-[#303038] relative">
             <CardContent className="px-3 py-1.5">
               <div className="flex justify-between items-start gap-4 text-sm">
                 <div className="w-28 text-left">
