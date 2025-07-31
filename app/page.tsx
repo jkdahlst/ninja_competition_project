@@ -181,91 +181,99 @@ export default function Home() {
 
       <div className="space-y-3">
         {filteredCompetitions.map((comp) => (
-          <Card key={comp.id} className="bg-[#FFF229] text-[#303038] relative">
-            <CardContent className="px-3 py-1.5">
-              <div className="flex justify-between items-start gap-4 text-sm">
-                <div className="w-28 text-left">
-                  <a
-                    href={getGoogleCalendarLink(
-                      comp.gym?.name + " " + comp.league + " " + comp.type,
-                      comp.start_date,
-                      comp.end_date,
-                      `Competition: ${comp.gym?.name} ${comp.league} ${comp.type}`,
-                      comp.gym?.location || "",
-                      comp.gym?.google_map_url || ""
-                    )}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="underline hover:text-black"
-                  >
-                    {formatDateRange(comp.start_date, comp.end_date)}
-                  </a>
-                </div>
+          <Card
+  key={comp.id}
+  className="relative text-[#303038] overflow-hidden"
+  style={{
+    backgroundImage: `linear-gradient(rgba(255,242,41,0.9), rgba(255,242,41,0.7)), url(/logos/${comp.league}.png)`,
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    backgroundRepeat: "no-repeat",
+  }}
+>
+  <CardContent className="px-3 py-1.5">
+    <div className="flex justify-between items-start gap-4 text-sm">
+      <div className="w-28 text-left">
+        <a
+          href={getGoogleCalendarLink(
+            comp.gym?.name + " " + comp.league + " " + comp.type,
+            comp.start_date,
+            comp.end_date,
+            `Competition: ${comp.gym?.name} ${comp.league} ${comp.type}`,
+            comp.gym?.location || "",
+            comp.gym?.google_map_url || ""
+          )}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline hover:text-black"
+        >
+          {formatDateRange(comp.start_date, comp.end_date)}
+        </a>
+      </div>
 
-                <div className="flex-1 text-left whitespace-pre-wrap">
-                  <span className="block">
-                    {comp.league} | {comp.type}
-                  </span>
-                </div>
+      <div className="flex-1 text-left whitespace-pre-wrap">
+        <span className="block">
+          {comp.league} | {comp.type}
+        </span>
+      </div>
 
-                <div className="w-32 text-right font-medium break-words">
-                  {comp.gym?.location ? (
-                    <a
-                      href={comp.gym.google_map_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="underline hover:text-black"
-                    >
-                      {comp.gym?.name}
-                    </a>
-                  ) : (
-                    comp.gym?.name
-                  )}
-                </div>
-              </div>
+      <div className="w-32 text-right font-medium break-words">
+        {comp.gym?.location ? (
+          <a
+            href={comp.gym.google_map_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-black"
+          >
+            {comp.gym?.name}
+          </a>
+        ) : (
+          comp.gym?.name
+        )}
+      </div>
+    </div>
 
-              <div className="mt-1 text-xs text-left font-semibold flex items-center gap-1">
-                Coach Attending:
-                {comp.coach_attending?.toLowerCase() === "yes" ? (
-                  <span className="text-green-600">☑️</span>
-                ) : comp.coach_attending?.toLowerCase() === "no" ? (
-                  <span className="text-gray-500">⬜</span>
-                ) : (
-                  <span className="text-yellow-500">❓</span>
-                )}
-              </div>
+    <div className="mt-1 text-xs text-left font-semibold flex items-center gap-1">
+      Coach Attending:
+      {comp.coach_attending?.toLowerCase() === "yes" ? (
+        <span className="text-green-600">☑️</span>
+      ) : comp.coach_attending?.toLowerCase() === "no" ? (
+        <span className="text-gray-500">⬜</span>
+      ) : (
+        <span className="text-yellow-500">❓</span>
+      )}
+    </div>
 
-              <div className="flex justify-center gap-16 mt-3">
-                <Button
-                  variant="default"
-                  disabled={!comp.registration_url}
-                  onClick={() =>
-                    comp.registration_url &&
-                    window.open(comp.registration_url, "_blank")
-                  }
-                >
-                  Register
-                </Button>
-                <Button
-                  variant="default"
-                  disabled={!comp.results_url}
-                  onClick={() =>
-                    comp.results_url && window.open(comp.results_url, "_blank")
-                  }
-                >
-                  Results
-                </Button>
-              </div>
+    <div className="flex justify-center gap-16 mt-3">
+      <Button
+        variant="default"
+        disabled={!comp.registration_url}
+        onClick={() =>
+          comp.registration_url && window.open(comp.registration_url, "_blank")
+        }
+      >
+        Register
+      </Button>
+      <Button
+        variant="default"
+        disabled={!comp.results_url}
+        onClick={() =>
+          comp.results_url && window.open(comp.results_url, "_blank")
+        }
+      >
+        Results
+      </Button>
+    </div>
 
-              {isAdmin && (
-                <div className="absolute bottom-2 right-2 z-10">
-                  <Link href={`/edit/${comp.id}`}>
-                    <Settings className="w-5 h-5 text-gray-400 hover:text-[#FFF229] cursor-pointer" />
-                  </Link>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+    {isAdmin && (
+      <div className="absolute bottom-2 right-2 z-10">
+        <Link href={`/edit/${comp.id}`}>
+          <Settings className="w-5 h-5 text-gray-700 hover:text-[#303038] cursor-pointer" />
+        </Link>
+      </div>
+    )}
+  </CardContent>
+</Card>
         ))}
       </div>
     </main>
