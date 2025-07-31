@@ -185,7 +185,7 @@ export default function Home() {
   key={comp.id}
   className="relative text-[#303038] overflow-hidden"
   style={{
-    backgroundImage: `linear-gradient(rgba(255,242,41,0.9), rgba(255,242,41,0.7)), url(/logos/${comp.league}.png)`,
+    backgroundImage: `linear-gradient(rgba(255,242,41,0.9), rgba(255,242,41,0.9)), url(/logos/${comp.league}.png)`,
     backgroundSize: "cover",
     backgroundPosition: "center",
     backgroundRepeat: "no-repeat",
