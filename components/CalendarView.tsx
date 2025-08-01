@@ -168,45 +168,70 @@ export default function CalendarView({ competitions }: CalendarViewProps) {
 
       <>
         <FullCalendar
-          plugins={[dayGridPlugin, interactionPlugin]}
-          initialView="dayGridMonth"
-          dayMaxEventRows={true}
-          dayMaxEvents={4}
-          firstDay={1} // Start week on Monday
-          height="auto"
-          eventContent={(arg) => (
-            <div className="text-xs px-1 py-0.5 leading-snug whitespace-normal break-words">
-              {arg.event.title}
-            </div>
-          )}
-          events={
-            selectedLeague === "All"
-              ? events
-              : events.filter(
-                  (event) => event.extendedProps?.league === selectedLeague
-                )
-          }
-          eventClick={(info) => {
-            info.jsEvent.preventDefault();
+  plugins={[dayGridPlugin, interactionPlugin]}
+  initialView="dayGridMonth"
+  dayMaxEventRows={true}
+  dayMaxEvents={4}
+  firstDay={1} // Start week on Monday
+  height="auto"
+  events={
+    selectedLeague === "All"
+      ? events
+      : events.filter(
+          (event) => event.extendedProps?.league === selectedLeague
+        )
+  }
+  eventContent={(arg) => (
+    <div className="text-xs px-1 py-0.5 leading-snug whitespace-normal break-words">
+      {arg.event.title}
+    </div>
+  )}
+  eventDidMount={(info) => {
+    const league = info.event.extendedProps?.league;
+    if (!league) return;
 
-            setSelectedEvent({
-              title: info.event.title,
-              start: info.event.start ? info.event.start.toISOString() : "",
-              end: info.event.end ? info.event.end.toISOString() : "",
-              url: info.event.url || undefined,
-              extendedProps: {
-                league: info.event.extendedProps.league,
-                type: info.event.extendedProps.type,
-                coach_attending: info.event.extendedProps.coach_attending,
-                results_url: info.event.extendedProps.results_url,
-                location: info.event.extendedProps.location,
-                google_map_url: info.event.extendedProps.google_map_url,
-              },
-            });
+    const logoUrl = `/logos/${league}.png`; // logo path from /public/logos
 
-            setShowModal(true);
-          }}
-        />
+    info.el.style.backgroundImage = `url(${logoUrl})`;
+    info.el.style.backgroundSize = "cover";
+    info.el.style.backgroundRepeat = "no-repeat";
+    info.el.style.backgroundPosition = "center";
+    info.el.style.color = "#fff";
+    info.el.style.fontWeight = "bold";
+
+    // Optional: Add a dark overlay for text readability
+    info.el.style.position = "relative";
+    info.el.innerHTML = `
+      <div style="
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 1;
+        border-radius: 4px;
+      "></div>
+    `;
+  }}
+  eventClick={(info) => {
+    info.jsEvent.preventDefault();
+
+    setSelectedEvent({
+      title: info.event.title,
+      start: info.event.start ? info.event.start.toISOString() : "",
+      end: info.event.end ? info.event.end.toISOString() : "",
+      url: info.event.url || undefined,
+      extendedProps: {
+        league: info.event.extendedProps.league,
+        type: info.event.extendedProps.type,
+        coach_attending: info.event.extendedProps.coach_attending,
+        results_url: info.event.extendedProps.results_url,
+        location: info.event.extendedProps.location,
+        google_map_url: info.event.extendedProps.google_map_url,
+      },
+    });
+
+    setShowModal(true);
+  }}
+/>
 
         {showModal && selectedEvent && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
