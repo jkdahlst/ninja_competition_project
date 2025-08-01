@@ -181,36 +181,41 @@ export default function CalendarView({ competitions }: CalendarViewProps) {
           (event) => event.extendedProps?.league === selectedLeague
         )
   }
-  eventContent={(arg) => (
-    <div className="text-xs px-1 py-0.5 leading-snug whitespace-normal break-words">
-      {arg.event.title}
-    </div>
-  )}
   eventDidMount={(info) => {
-    const league = info.event.extendedProps?.league;
-    if (!league) return;
+  const league = info.event.extendedProps?.league;
+  if (!league) return;
 
-    const logoUrl = `/logos/${league}.png`; // logo path from /public/logos
+  const logoUrl = `/logos/${league}.png`;
 
-    info.el.style.backgroundImage = `url(${logoUrl})`;
-    info.el.style.backgroundSize = "cover";
-    info.el.style.backgroundRepeat = "no-repeat";
-    info.el.style.backgroundPosition = "center";
-    info.el.style.color = "#fff";
-    info.el.style.fontWeight = "bold";
+  const el = info.el as HTMLElement;
 
-    // Optional: Add a dark overlay for text readability
-    info.el.style.position = "relative";
-    info.el.innerHTML = `
-      <div style="
-        position: absolute;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.7);
-        z-index: 1;
-        border-radius: 4px;
-      "></div>
-    `;
-  }}
+  // Background logo
+  el.style.backgroundImage = `url(${logoUrl})`;
+  el.style.backgroundSize = "cover";
+  el.style.backgroundRepeat = "no-repeat";
+  el.style.backgroundPosition = "center";
+
+  // Font and text styling
+  el.style.fontSize = "0.65rem"; // Smaller font
+  el.style.whiteSpace = "normal"; // Allow wrapping
+  el.style.lineHeight = "1rem";
+  el.style.wordBreak = "break-word";
+  el.style.color = "#fff";
+  el.style.fontWeight = "bold";
+  el.style.padding = "2px 4px";
+  el.style.position = "relative";
+
+  // Optional: add dark overlay for contrast
+  const overlay = document.createElement("div");
+  overlay.style.position = "absolute";
+  overlay.style.inset = "0";
+  overlay.style.background = "rgba(0, 0, 0, 0.8)";
+  overlay.style.zIndex = "1";
+  overlay.style.borderRadius = "4px";
+
+  el.style.zIndex = "2"; // make sure text sits on top
+  el.appendChild(overlay);
+}}
   eventClick={(info) => {
     info.jsEvent.preventDefault();
 
