@@ -25,11 +25,41 @@ function parseCSV(text: string): Athlete[] {
   });
 }
 
-function extractDivision(fullDivision: string | undefined) {
-  if (!fullDivision) return "Unknown";
-  const parts = fullDivision.trim().split(/\s+/);
-  return parts.length >= 2 ? parts.slice(-2).join(" ") : fullDivision.trim();
+function extractDivision(fullDivision: string | undefined): { name: string; isEmployee: boolean } {
+  if (!fullDivision) return { name: "Unknown", isEmployee: false };
+
+  const trimmed = fullDivision.trim();
+  const isEmployee = /employee/i.test(trimmed);
+
+  // Remove 'employee' and extra spaces
+  const cleaned = trimmed.replace(/employee/i, "").trim().replace(/\s{2,}/g, " ");
+
+  // Extract gender (male or female)
+  const genderMatch = cleaned.match(/\b(male|female)\b/i);
+  const gender = genderMatch ? genderMatch[0][0].toUpperCase() + genderMatch[0].slice(1).toLowerCase() : "Unknown";
+
+  // Check if pro exists anywhere
+  if (/\bpro\b/i.test(cleaned)) {
+    return { name: `${gender} Pro`, isEmployee };
+  }
+
+  // Extract age group patterns
+  const ageRangeMatch = cleaned.match(/\b\d{1,2}-\d{1,2}\b/); // e.g. 14-24
+  const agePlusMatch = cleaned.match(/\b\d+\+\b/);           // e.g. 40+
+  const ageUmatch = cleaned.match(/\b\d+U\b/i);              // e.g. 9U
+  const ageNumberMatch = cleaned.match(/\b\d+\b/);           // fallback, any number
+
+  const ageGroup =
+    ageRangeMatch?.[0] ??
+    agePlusMatch?.[0] ??
+    ageUmatch?.[0] ??
+    ageNumberMatch?.[0] ??
+    "Unknown";
+
+  return { name: `${gender} ${ageGroup}`, isEmployee };
 }
+
+
 
 function divisionSortKey(div: string): number {
   const divLower = div.toLowerCase();
@@ -55,7 +85,9 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export default function ClientAthletesPage({ competitionId }: { competitionId: string }) {
-  const [groupedAthletes, setGroupedAthletes] = useState<Record<string, string[]>>({});
+  const [groupedAthletes, setGroupedAthletes] = useState<
+    Record<string, { name: string; isEmployee: boolean; originalDivision: string}[]>
+  >({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -81,12 +113,13 @@ export default function ClientAthletesPage({ competitionId }: { competitionId: s
         const csv = await res.text();
         const athletes = parseCSV(csv);
 
-        const grouped = athletes.reduce((acc: Record<string, string[]>, athlete) => {
-          const div = extractDivision(athlete.Division);
-          if (!acc[div]) acc[div] = [];
-          acc[div].push(athlete.Name);
-          return acc;
+        const grouped = athletes.reduce((acc: Record<string, { name: string; isEmployee: boolean; originalDivision: string }[]>, athlete) => {
+            const { name: divName, isEmployee } = extractDivision(athlete.Division);
+            if (!acc[divName]) acc[divName] = [];
+            acc[divName].push({ name: athlete.Name, isEmployee, originalDivision: athlete.Division || "" });
+            return acc;
         }, {});
+
 
         setGroupedAthletes(grouped);
       } catch (e: any) {
@@ -104,7 +137,9 @@ export default function ClientAthletesPage({ competitionId }: { competitionId: s
 
   return (
     <main className="p-4 max-w-2xl mx-auto font-sans text-[#303038]">
-      <h1 className="text-2xl font-bold mb-6">Athletes by Division</h1>
+      <h1 className="text-2xl font-bold mb-6">
+        Athletes by Division ({Object.values(groupedAthletes).reduce((sum, list) => sum + list.length, 0)})
+      </h1>
 
       {Object.entries(groupedAthletes).length === 0 && <p>No athletes found.</p>}
 
@@ -116,9 +151,17 @@ export default function ClientAthletesPage({ competitionId }: { competitionId: s
               {division} ({names.length})
             </h2>
             <ul className="list-disc list-inside">
-              {names.map((name, i) => (
-                <li key={i}>{name}</li>
-              ))}
+                {names.map(({ name, isEmployee, originalDivision }, i) => {
+                    const isNinjaU = /ninja\s*u(?=[ ,]|$)/i.test(originalDivision);
+                    return (
+                    <li
+                        key={i}
+                        className={`${isEmployee ? "text-blue-600" : ""} ${isNinjaU ? "font-bold" : ""}`}
+                    >
+                        {name}
+                    </li>
+                );
+            })}
             </ul>
           </section>
         ))}
