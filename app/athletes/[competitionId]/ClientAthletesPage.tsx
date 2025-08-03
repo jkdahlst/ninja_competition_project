@@ -200,7 +200,7 @@ export default function ClientAthletesPage({
 
       <div className="mb-4">
         <button
-          className="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700"
+          className="bg-[#303038] text-[#FFF229] px-4 py-2 rounded focus:outline-none"
           onClick={() => setShowOnlyNinjaU((prev) => !prev)}
         >
           {showOnlyNinjaU ? "Show All Athletes" : "Show Only NinjaU Athletes"}
