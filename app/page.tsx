@@ -11,6 +11,7 @@ import PageHeader from "@/components/PageHeader";
 import { Competition } from "@/types";
 import { getGoogleCalendarLink } from "@/utils/googleCalendar";
 import { useUser } from "@/context/UserContext";
+import { useRouter } from "next/navigation";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -25,6 +26,7 @@ interface Gym {
 }
 
 export default function Home() {
+  const router = useRouter();
   const [competitions, setCompetitions] = useState<Competition[]>([]);
   const [filterText, setFilterText] = useState("");
   const [activeTab, setActiveTab] = useState<"upcoming" | "previous">(
@@ -48,7 +50,7 @@ export default function Home() {
     setError(null);
     const { data, error } = await supabase
       .from("competitions")
-      .select("*, gym:gyms(*)")
+      .select("*, gym:gyms(*), athlete_sheet_url")
       .order("start_date", { ascending: true });
 
     setDataLoading(false);
@@ -263,6 +265,15 @@ export default function Home() {
       >
         Results
       </Button>
+
+{comp.athlete_sheet_url && (
+  <Button
+    variant="default"
+    onClick={() => router.push(`/athletes?competitionId=${comp.id}`)}
+  >
+    List
+  </Button>
+)}
     </div>
 
     {isAdmin && (

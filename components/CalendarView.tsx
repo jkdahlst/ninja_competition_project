@@ -209,7 +209,7 @@ export default function CalendarView({ competitions }: CalendarViewProps) {
   const overlay = document.createElement("div");
   overlay.style.position = "absolute";
   overlay.style.inset = "0";
-  overlay.style.background = "rgba(0, 0, 0, 0.7)";
+  overlay.style.background = "rgba(0, 0, 0, 0.8)";
   overlay.style.zIndex = "1";
   overlay.style.borderRadius = "4px";
 
