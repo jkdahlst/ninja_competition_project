@@ -168,75 +168,75 @@ export default function CalendarView({ competitions }: CalendarViewProps) {
 
       <>
         <FullCalendar
-  plugins={[dayGridPlugin, interactionPlugin]}
-  initialView="dayGridMonth"
-  dayMaxEventRows={true}
-  dayMaxEvents={4}
-  firstDay={1} // Start week on Monday
-  height="auto"
-  events={
-    selectedLeague === "All"
-      ? events
-      : events.filter(
-          (event) => event.extendedProps?.league === selectedLeague
-        )
-  }
-  eventDidMount={(info) => {
-  const league = info.event.extendedProps?.league;
-  if (!league) return;
+          plugins={[dayGridPlugin, interactionPlugin]}
+          initialView="dayGridMonth"
+          dayMaxEventRows={true}
+          dayMaxEvents={4}
+          firstDay={1} // Start week on Monday
+          height="auto"
+          events={
+            selectedLeague === "All"
+              ? events
+              : events.filter(
+                  (event) => event.extendedProps?.league === selectedLeague
+                )
+          }
+          eventDidMount={(info) => {
+            const league = info.event.extendedProps?.league;
+            if (!league) return;
 
-  const logoUrl = `/logos/${league}.png`;
+            const logoUrl = `/logos/${league}.png`;
 
-  const el = info.el as HTMLElement;
+            const el = info.el as HTMLElement;
 
-  // Background logo
-  el.style.backgroundImage = `url(${logoUrl})`;
-  el.style.backgroundSize = "cover";
-  el.style.backgroundRepeat = "no-repeat";
-  el.style.backgroundPosition = "center";
+            // Background logo
+            el.style.backgroundImage = `url(${logoUrl})`;
+            el.style.backgroundSize = "cover";
+            el.style.backgroundRepeat = "no-repeat";
+            el.style.backgroundPosition = "center";
 
-  // Font and text styling
-  el.style.fontSize = "0.65rem"; // Smaller font
-  el.style.whiteSpace = "normal"; // Allow wrapping
-  el.style.lineHeight = "1rem";
-  el.style.wordBreak = "break-word";
-  el.style.color = "#fff";
-  el.style.fontWeight = "bold";
-  el.style.padding = "2px 4px";
-  el.style.position = "relative";
+            // Font and text styling
+            el.style.fontSize = "0.65rem"; // Smaller font
+            el.style.whiteSpace = "normal"; // Allow wrapping
+            el.style.lineHeight = "1rem";
+            el.style.wordBreak = "break-word";
+            el.style.color = "#fff";
+            el.style.fontWeight = "bold";
+            el.style.padding = "2px 4px";
+            el.style.position = "relative";
 
-  // Optional: add dark overlay for contrast
-  const overlay = document.createElement("div");
-  overlay.style.position = "absolute";
-  overlay.style.inset = "0";
-  overlay.style.background = "rgba(0, 0, 0, 0.8)";
-  overlay.style.zIndex = "1";
-  overlay.style.borderRadius = "4px";
+            // Optional: add dark overlay for contrast
+            const overlay = document.createElement("div");
+            overlay.style.position = "absolute";
+            overlay.style.inset = "0";
+            overlay.style.background = "rgba(0, 0, 0, 0.8)";
+            overlay.style.zIndex = "1";
+            overlay.style.borderRadius = "4px";
 
-  el.style.zIndex = "2"; // make sure text sits on top
-  el.appendChild(overlay);
-}}
-  eventClick={(info) => {
-    info.jsEvent.preventDefault();
+            el.style.zIndex = "2"; // make sure text sits on top
+            el.appendChild(overlay);
+          }}
+          eventClick={(info) => {
+            info.jsEvent.preventDefault();
 
-    setSelectedEvent({
-      title: info.event.title,
-      start: info.event.start ? info.event.start.toISOString() : "",
-      end: info.event.end ? info.event.end.toISOString() : "",
-      url: info.event.url || undefined,
-      extendedProps: {
-        league: info.event.extendedProps.league,
-        type: info.event.extendedProps.type,
-        coach_attending: info.event.extendedProps.coach_attending,
-        results_url: info.event.extendedProps.results_url,
-        location: info.event.extendedProps.location,
-        google_map_url: info.event.extendedProps.google_map_url,
-      },
-    });
+            setSelectedEvent({
+              title: info.event.title,
+              start: info.event.start ? info.event.start.toISOString() : "",
+              end: info.event.end ? info.event.end.toISOString() : "",
+              url: info.event.url || undefined,
+              extendedProps: {
+                league: info.event.extendedProps.league,
+                type: info.event.extendedProps.type,
+                coach_attending: info.event.extendedProps.coach_attending,
+                results_url: info.event.extendedProps.results_url,
+                location: info.event.extendedProps.location,
+                google_map_url: info.event.extendedProps.google_map_url,
+              },
+            });
 
-    setShowModal(true);
-  }}
-/>
+            setShowModal(true);
+          }}
+        />
 
         {showModal && selectedEvent && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
