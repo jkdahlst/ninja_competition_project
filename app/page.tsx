@@ -267,12 +267,12 @@ export default function Home() {
       </Button>
 
 {comp.athlete_sheet_url && (
-  <Button
-    variant="default"
-    onClick={() => router.push(`/athletes?competitionId=${comp.id}`)}
-  >
-    List
-  </Button>
+<Button
+  variant="default"
+  onClick={() => router.push(`/athletes/${comp.id}`)}
+>
+  List
+</Button>
 )}
     </div>
 
