@@ -116,7 +116,7 @@ export default function Home() {
       return leagueMatches && typeMatches;
     })
     .filter((comp) => {
-      const endDate = new Date(comp.end_date);
+      const endDate = new Date(comp.end_date + "T23:59:59");
       return activeTab === "upcoming" ? endDate >= now : endDate < now;
     });
 
