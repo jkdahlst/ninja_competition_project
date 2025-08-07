@@ -50,7 +50,7 @@ export default function Home() {
     setError(null);
     const { data, error } = await supabase
       .from("competitions")
-      .select("*, gym:gyms(*), athlete_sheet_url")
+      .select("*, gym:gyms(*), athlete_sheet_url, format")
       .order("start_date", { ascending: true });
 
     setDataLoading(false);
@@ -219,6 +219,11 @@ export default function Home() {
                   <span className="block">
                     {comp.league} | {comp.type}
                   </span>
+                  {comp.format && (
+                    <span className="text-xs font-medium text-gray-700">
+                      Format: {comp.format}
+                    </span>
+                  )}
                 </div>
 
                 <div className="w-32 text-right font-medium break-words">

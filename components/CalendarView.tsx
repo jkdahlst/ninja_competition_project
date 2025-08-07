@@ -21,6 +21,7 @@ interface EventInput {
   extendedProps?: {
     league?: string;
     type?: string;
+    format?: string;
     coach_attending?: string;
     results_url?: string;
     location?: string;
@@ -90,7 +91,7 @@ export default function CalendarView({ competitions }: CalendarViewProps) {
 
   async function fetchEvents() {
     const { data, error } = await supabase.from("competitions").select(
-      `id, name, start_date, end_date, registration_url, league, type, coach_attending, results_url,
+      `id, name, start_date, end_date, registration_url, league, type, format, coach_attending, results_url,
        gym:gyms(name, location, google_map_url)`
     );
 
@@ -114,6 +115,7 @@ export default function CalendarView({ competitions }: CalendarViewProps) {
         extendedProps: {
           league: comp.league,
           type: comp.type,
+          format: comp.format,
           coach_attending: comp.coach_attending,
           results_url: comp.results_url,
           location: comp.gym?.location || "",
@@ -227,6 +229,7 @@ export default function CalendarView({ competitions }: CalendarViewProps) {
               extendedProps: {
                 league: info.event.extendedProps.league,
                 type: info.event.extendedProps.type,
+                format: info.event.extendedProps.format,
                 coach_attending: info.event.extendedProps.coach_attending,
                 results_url: info.event.extendedProps.results_url,
                 location: info.event.extendedProps.location,
@@ -274,6 +277,11 @@ export default function CalendarView({ competitions }: CalendarViewProps) {
               {selectedEvent.extendedProps?.type && (
                 <p>
                   <strong>Type:</strong> {selectedEvent.extendedProps?.type}
+                </p>
+              )}
+              {selectedEvent.extendedProps?.format && (
+                <p>
+                  <strong>Format:</strong> {selectedEvent.extendedProps?.format}
                 </p>
               )}
 

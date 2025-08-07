@@ -22,6 +22,7 @@ interface Competition {
   registration_url?: string;
   results_url?: string;
   coach_attending?: "yes" | "no" | "maybe" | null;
+  format?: string;
 }
 
 interface Gym {
@@ -98,12 +99,10 @@ export default function CompetitionForm({ id }: CompetitionFormProps) {
         router.push("/");
       }
     } else {
-      const { error } = await supabase
-        .from("competitions")
-        .insert({
-          ...formState,
-          gym: formState.gym ? Number(formState.gym) : null,
-        });
+      const { error } = await supabase.from("competitions").insert({
+        ...formState,
+        gym: formState.gym ? Number(formState.gym) : null,
+      });
 
       if (error) {
         console.error("Error creating competition:", error);
@@ -232,6 +231,17 @@ export default function CompetitionForm({ id }: CompetitionFormProps) {
           />
         </div>
 
+        {/* Format */}
+        <div>
+          <label className="block mb-1">Format</label>
+          <Input
+            value={formState.format || ""}
+            onChange={(e) =>
+              setFormState({ ...formState, format: e.target.value })
+            }
+          />
+        </div>
+
         {/* Registration URL */}
         <div>
           <label className="block mb-1">Registration URL</label>
@@ -275,11 +285,7 @@ export default function CompetitionForm({ id }: CompetitionFormProps) {
         </div>
 
         <div className="flex gap-4 mt-4">
-          <Button
-            type="submit"
-            disabled={submitting}
-            className="flex-1"
-          >
+          <Button type="submit" disabled={submitting} className="flex-1">
             {submitting
               ? "Saving..."
               : id

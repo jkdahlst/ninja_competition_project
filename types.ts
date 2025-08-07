@@ -20,4 +20,5 @@ export interface Competition {
   results_url: string;
   coach_attending: "yes" | "no" | "maybe" | null;
   athlete_sheet_url?: string; // make it optional if it can be null
+  format?: string;
 }
