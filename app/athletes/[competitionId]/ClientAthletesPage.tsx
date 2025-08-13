@@ -53,54 +53,62 @@ function extractDivision(fullDivision: string | undefined): {
 } {
   if (!fullDivision) return { name: "Unknown", isEmployee: false };
 
-  const trimmed = fullDivision.trim();
-  const isEmployee = /employee/i.test(trimmed);
-  const cleaned = trimmed
-    .replace(/employee/i, "")
-    .trim()
-    .replace(/\s{2,}/g, " ");
+  const normalized = fullDivision
+    .toLowerCase()
+    .replace(/[’‘]/g, "'") // normalize quotes
+    .replace(/\s+/g, " ")
+    .trim();
 
-  const genderMatch = cleaned.match(/\b(male|female)\b/i);
+  const isEmployee = /employee/i.test(normalized);
+
+  // Detect gender
+  const genderMatch = normalized.match(/\b(male|female)\b/);
   const gender = genderMatch
     ? genderMatch[0][0].toUpperCase() + genderMatch[0].slice(1).toLowerCase()
     : "Unknown";
 
-  if (/\bpro\b/i.test(cleaned)) {
+  // Detect special divisions
+  if (normalized.includes("amateur")) {
+    return { name: `${gender} Amateur`, isEmployee };
+  }
+  if (normalized.includes("intermediate")) {
+    return { name: `${gender} Intermediate`, isEmployee };
+  }
+  if (/\bpro\b/.test(normalized)) {
     return { name: `${gender} Pro`, isEmployee };
   }
 
-  const ageRangeMatch = cleaned.match(/\b\d{1,2}-\d{1,2}\b/);
-  const agePlusMatch = cleaned.match(/\b\d+\+\b/);
-  const ageUmatch = cleaned.match(/\b\d+U\b/i);
-  const ageNumberMatch = cleaned.match(/\b\d+\b/);
-
-  const ageGroup =
-    ageRangeMatch?.[0] ??
-    agePlusMatch?.[0] ??
-    ageUmatch?.[0] ??
-    ageNumberMatch?.[0] ??
-    "Unknown";
-
-  return { name: `${gender} ${ageGroup}`, isEmployee };
-}
-
-function divisionSortKey(div: string): number {
-  const divLower = div.toLowerCase();
-
-  if (divLower.includes("pro")) return 9999;
-
-  const female = divLower.includes("female");
-  const male = divLower.includes("male");
-
-  const matches = div.match(/(\d+)\+?/g);
-  if (matches && matches.length > 0) {
-    let numStr = matches[matches.length - 1];
-    numStr = numStr.replace("+", "");
-    const base = parseInt(numStr, 10);
-    return female ? base - 0.1 : base;
+  // Detect 50+ / masters
+  const plusMatch = normalized.match(/(\d+)\s*\+/);
+  if (plusMatch) {
+    return { name: `${gender} ${plusMatch[1]}+`, isEmployee };
   }
 
-  return female ? 9998 : 9997;
+  // Detect standard age divisions like 7U, 9U, 11U
+  const ageUMatch = normalized.match(/(\d+)\s*u/);
+  if (ageUMatch) {
+    return { name: `${gender} ${ageUMatch[1]}U`, isEmployee };
+  }
+
+  // Fallback: unknown division
+  return { name: `${gender} Unknown`, isEmployee };
+}
+
+// Improved sort so 7U < 9U < 11U < Amateur < Intermediate < 50+ < Pro
+function divisionSortKey(division: string): string {
+  const match = division.match(/(\d+)U/);
+  if (match) {
+    // Pad with zero for correct sorting (7U -> 07)
+    return `A${match[1].padStart(2, "0")}`;
+  }
+  if (/amateur/i.test(division)) return "B00";
+  if (/intermediate/i.test(division)) return "B01";
+  if (/\d+\+/.test(division)) {
+    const plusNum = division.match(/(\d+)\+/)?.[1] || "99";
+    return `B${plusNum}`;
+  }
+  if (/pro/i.test(division)) return "C00";
+  return "Z99"; // Unknowns go last
 }
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -211,7 +219,17 @@ export default function ClientAthletesPage({
       )}
 
       {Object.entries(groupedAthletes)
-        .sort(([a], [b]) => divisionSortKey(a) - divisionSortKey(b))
+        .sort(([a], [b]) => {
+            // 1️⃣ Sort by division first
+            const divCompare = divisionSortKey(a).localeCompare(divisionSortKey(b));
+            if (divCompare !== 0) return divCompare;
+
+            // 2️⃣ If same division, sort by gender (Female first, then Male)
+            const genderOrder = { Female: 0, Male: 1 };
+            const genderA = a.startsWith("Female") ? "Female" : "Male";
+            const genderB = b.startsWith("Female") ? "Female" : "Male";
+            return genderOrder[genderA] - genderOrder[genderB];
+        })
         .map(([division, names]) => {
           const filteredNames = showOnlyNinjaU
             ? names.filter(({ originalDivision }) =>
