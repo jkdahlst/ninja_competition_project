@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
+import Link from "next/link";
 
 interface Athlete {
   Name: string;
@@ -192,6 +193,14 @@ export default function ClientAthletesPage({
 
   return (
     <main className="p-4 max-w-2xl mx-auto font-sans text-[#303038]">
+      <div className="fixed top-15 right-4 z-50">
+        <Link
+          href="/"
+          className="bg-[#303038] text-[#FFF229] px-2 py-1 rounded shadow-lg hover:opacity-90"
+        >
+          Comp List
+        </Link>
+      </div>
       <h1 className="text-2xl font-bold mb-6">
         Athletes by Division (
         {Object.values(groupedAthletes).reduce(
@@ -220,15 +229,17 @@ export default function ClientAthletesPage({
 
       {Object.entries(groupedAthletes)
         .sort(([a], [b]) => {
-            // 1️⃣ Sort by division first
-            const divCompare = divisionSortKey(a).localeCompare(divisionSortKey(b));
-            if (divCompare !== 0) return divCompare;
+          // 1️⃣ Sort by division first
+          const divCompare = divisionSortKey(a).localeCompare(
+            divisionSortKey(b)
+          );
+          if (divCompare !== 0) return divCompare;
 
-            // 2️⃣ If same division, sort by gender (Female first, then Male)
-            const genderOrder = { Female: 0, Male: 1 };
-            const genderA = a.startsWith("Female") ? "Female" : "Male";
-            const genderB = b.startsWith("Female") ? "Female" : "Male";
-            return genderOrder[genderA] - genderOrder[genderB];
+          // 2️⃣ If same division, sort by gender (Female first, then Male)
+          const genderOrder = { Female: 0, Male: 1 };
+          const genderA = a.startsWith("Female") ? "Female" : "Male";
+          const genderB = b.startsWith("Female") ? "Female" : "Male";
+          return genderOrder[genderA] - genderOrder[genderB];
         })
         .map(([division, names]) => {
           const filteredNames = showOnlyNinjaU

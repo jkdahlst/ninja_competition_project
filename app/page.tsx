@@ -28,17 +28,36 @@ interface Gym {
 export default function Home() {
   const router = useRouter();
   const [competitions, setCompetitions] = useState<Competition[]>([]);
-  const [filterText, setFilterText] = useState("");
   const [activeTab, setActiveTab] = useState<"upcoming" | "previous">(
     "upcoming"
   );
   const [leagues, setLeagues] = useState<string[]>([]);
   const [types, setTypes] = useState<string[]>([]);
-  const [typeFilter, setTypeFilter] = useState("");
+
+const [filterText, setFilterText] = useState("");
+const [typeFilter, setTypeFilter] = useState("");
+const [hasMounted, setHasMounted] = useState(false);
 
   useEffect(() => {
     fetchCompetitions();
   }, []);
+
+useEffect(() => {
+  setHasMounted(true); // ensures component is mounted before using storage
+  const storedFilterText = sessionStorage.getItem("filterText");
+  if (storedFilterText) setFilterText(storedFilterText);
+
+  const storedTypeFilter = sessionStorage.getItem("typeFilter");
+  if (storedTypeFilter) setTypeFilter(storedTypeFilter);
+}, []);
+
+useEffect(() => {
+  if (hasMounted) sessionStorage.setItem("filterText", filterText);
+}, [filterText, hasMounted]);
+
+useEffect(() => {
+  if (hasMounted) sessionStorage.setItem("typeFilter", typeFilter);
+}, [typeFilter, hasMounted]);
 
   const [dataLoading, setDataLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -177,6 +196,8 @@ export default function Home() {
           onClick={() => {
             setFilterText("");
             setTypeFilter("");
+            sessionStorage.removeItem("filterText");
+            sessionStorage.removeItem("typeFilter");
           }}
         >
           Clear
