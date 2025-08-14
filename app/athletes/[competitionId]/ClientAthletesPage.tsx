@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 interface Athlete {
@@ -13,31 +15,20 @@ function parseCSVWithTimestamp(text: string): {
   athletes: Athlete[];
   lastUpdated: string | null;
 } {
-  const rawLines = text
-    .trim()
-    .split("\n")
-    .map((line) => line.trim());
-  let lines = rawLines.filter((line) => line && !/^,+$/.test(line)); // Remove empty or comma-only lines
+  const rawLines = text.trim().split("\n").map((line) => line.trim());
+  let lines = rawLines.filter((line) => line && !/^,+$/.test(line));
 
   let lastUpdated: string | null = null;
-
   if (/^last updated:/i.test(lines[0])) {
-    lastUpdated = lines[0]
-      .replace(/^last updated:\s*/i, "")
-      .replace(/,+$/, "")
-      .trim();
+    lastUpdated = lines[0].replace(/^last updated:\s*/i, "").replace(/,+$/, "").trim();
     lines = lines.slice(1);
   }
 
   if (lines.length === 0) return { athletes: [], lastUpdated };
 
   const headers = lines[0].split(",").map((h) => h.trim());
-
   const athletes = lines.slice(1).map((line) => {
-    const values =
-      line
-        .match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g)
-        ?.map((v) => v.replace(/^"|"$/g, "").trim()) || [];
+    const values = line.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g)?.map((v) => v.replace(/^"|"$/g, "").trim()) || [];
     const obj: any = {};
     headers.forEach((h, i) => {
       obj[h] = values[i] || "";
@@ -48,85 +39,43 @@ function parseCSVWithTimestamp(text: string): {
   return { athletes, lastUpdated };
 }
 
-function extractDivision(fullDivision: string | undefined): {
-  name: string;
-  isEmployee: boolean;
-} {
+function extractDivision(fullDivision: string | undefined): { name: string; isEmployee: boolean } {
   if (!fullDivision) return { name: "Unknown", isEmployee: false };
-
-  const normalized = fullDivision
-    .toLowerCase()
-    .replace(/[’‘]/g, "'") // normalize quotes
-    .replace(/\s+/g, " ")
-    .trim();
-
+  const normalized = fullDivision.toLowerCase().replace(/[’‘]/g, "'").replace(/\s+/g, " ").trim();
   const isEmployee = /employee/i.test(normalized);
 
-  // Detect gender
   const genderMatch = normalized.match(/\b(male|female)\b/);
-  const gender = genderMatch
-    ? genderMatch[0][0].toUpperCase() + genderMatch[0].slice(1).toLowerCase()
-    : "Unknown";
+  const gender = genderMatch ? genderMatch[0][0].toUpperCase() + genderMatch[0].slice(1).toLowerCase() : "Unknown";
 
-  // Detect special divisions
-  if (normalized.includes("amateur")) {
-    return { name: `${gender} Amateur`, isEmployee };
-  }
-  if (normalized.includes("intermediate")) {
-    return { name: `${gender} Intermediate`, isEmployee };
-  }
-  if (/\bpro\b/.test(normalized)) {
-    return { name: `${gender} Pro`, isEmployee };
-  }
+  if (normalized.includes("amateur")) return { name: `${gender} Amateur`, isEmployee };
+  if (normalized.includes("intermediate")) return { name: `${gender} Intermediate`, isEmployee };
+  if (/\bpro\b/.test(normalized)) return { name: `${gender} Pro`, isEmployee };
 
-  // Detect 50+ / masters
   const plusMatch = normalized.match(/(\d+)\s*\+/);
-  if (plusMatch) {
-    return { name: `${gender} ${plusMatch[1]}+`, isEmployee };
-  }
+  if (plusMatch) return { name: `${gender} ${plusMatch[1]}+`, isEmployee };
 
-  // Detect standard age divisions like 7U, 9U, 11U
   const ageUMatch = normalized.match(/(\d+)\s*u/);
-  if (ageUMatch) {
-    return { name: `${gender} ${ageUMatch[1]}U`, isEmployee };
-  }
+  if (ageUMatch) return { name: `${gender} ${ageUMatch[1]}U`, isEmployee };
 
-  // Fallback: unknown division
   return { name: `${gender} Unknown`, isEmployee };
 }
 
-// Improved sort so 7U < 9U < 11U < Amateur < Intermediate < 50+ < Pro
 function divisionSortKey(division: string): string {
   const match = division.match(/(\d+)U/);
-  if (match) {
-    // Pad with zero for correct sorting (7U -> 07)
-    return `A${match[1].padStart(2, "0")}`;
-  }
+  if (match) return `A${match[1].padStart(2, "0")}`;
   if (/amateur/i.test(division)) return "B00";
   if (/intermediate/i.test(division)) return "B01";
-  if (/\d+\+/.test(division)) {
-    const plusNum = division.match(/(\d+)\+/)?.[1] || "99";
-    return `B${plusNum}`;
-  }
+  if (/\d+\+/.test(division)) return `B${division.match(/(\d+)\+/)?.[1] || "99"}`;
   if (/pro/i.test(division)) return "C00";
-  return "Z99"; // Unknowns go last
+  return "Z99";
 }
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-export default function ClientAthletesPage({
-  competitionId,
-}: {
-  competitionId: string;
-}) {
-  const [groupedAthletes, setGroupedAthletes] = useState<
-    Record<
-      string,
-      { name: string; isEmployee: boolean; originalDivision: string }[]
-    >
-  >({});
+export default function ClientAthletesPage({ competitionId }: { competitionId: string }) {
+  const [groupedAthletes, setGroupedAthletes] = useState<Record<string, { name: string; isEmployee: boolean; originalDivision: string }[]>>({});
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -144,9 +93,7 @@ export default function ClientAthletesPage({
           .single();
 
         if (error) throw error;
-        if (!data?.athlete_sheet_url) {
-          throw new Error("No athlete sheet URL found for this competition");
-        }
+        if (!data?.athlete_sheet_url) throw new Error("No athlete sheet URL found for this competition");
 
         const res = await fetch(data.athlete_sheet_url);
         if (!res.ok) throw new Error("Failed to fetch athlete sheet data");
@@ -155,27 +102,12 @@ export default function ClientAthletesPage({
         const { athletes, lastUpdated } = parseCSVWithTimestamp(csv);
         setLastUpdated(lastUpdated);
 
-        const grouped = athletes.reduce(
-          (
-            acc: Record<
-              string,
-              { name: string; isEmployee: boolean; originalDivision: string }[]
-            >,
-            athlete
-          ) => {
-            const { name: divName, isEmployee } = extractDivision(
-              athlete.Division
-            );
-            if (!acc[divName]) acc[divName] = [];
-            acc[divName].push({
-              name: athlete.Name,
-              isEmployee,
-              originalDivision: athlete.Division || "",
-            });
-            return acc;
-          },
-          {}
-        );
+        const grouped = athletes.reduce((acc: Record<string, { name: string; isEmployee: boolean; originalDivision: string }[]>, athlete) => {
+          const { name: divName, isEmployee } = extractDivision(athlete.Division);
+          if (!acc[divName]) acc[divName] = [];
+          acc[divName].push({ name: athlete.Name, isEmployee, originalDivision: athlete.Division || "" });
+          return acc;
+        }, {});
 
         setGroupedAthletes(grouped);
       } catch (e: any) {
@@ -192,91 +124,86 @@ export default function ClientAthletesPage({
   if (error) return <p className="text-red-600">Error: {error}</p>;
 
   return (
-    <main className="p-4 max-w-2xl mx-auto font-sans text-[#303038]">
-      <div className="fixed top-15 right-4 z-50">
-        <Link
-          href="/"
-          className="bg-[#303038] text-[#FFF229] px-2 py-1 rounded shadow-lg hover:opacity-90"
-        >
+    <main className="p-4 max-w-2xl mx-auto bg-gray-600 min-h-screen text-[#FFF229] font-sans">
+      <div className="fixed top-13 right-4 z-50">
+        <Link href="/" className="bg-[#303038] text-[#FFF229] px-3 py-1 rounded shadow hover:opacity-90">
           Comp List
         </Link>
       </div>
+
       <h1 className="text-2xl font-bold mb-6">
         Athletes by Division (
-        {Object.values(groupedAthletes).reduce(
-          (sum, list) => sum + list.length,
-          0
-        )}
-        )
-        {lastUpdated && (
-          <p className="text-sm text-gray-600 mb-4">
-            Last updated: {lastUpdated}
-          </p>
-        )}
+        {Object.values(groupedAthletes).reduce((sum, list) => sum + list.length, 0)})
+        {lastUpdated && <p className="text-sm text-gray-400">{lastUpdated}</p>}
       </h1>
 
-      <div className="mb-4">
-        <button
-          className="bg-[#303038] text-[#FFF229] px-4 py-2 rounded focus:outline-none"
-          onClick={() => setShowOnlyNinjaU((prev) => !prev)}
-        >
+      <div className="mb-4 ">
+        <Button onClick={() => setShowOnlyNinjaU((prev) => !prev)}
+          className="bg-[#303038] text-[#FFF229] px-3 py-1 rounded shadow hover:opacity-90">
           {showOnlyNinjaU ? "Show All Athletes" : "Show Only NinjaU Athletes"}
-        </button>
+        </Button>
       </div>
-      {Object.entries(groupedAthletes).length === 0 && (
-        <p>No athletes found.</p>
-      )}
 
-      {Object.entries(groupedAthletes)
-        .sort(([a], [b]) => {
-          // 1️⃣ Sort by division first
-          const divCompare = divisionSortKey(a).localeCompare(
-            divisionSortKey(b)
-          );
-          if (divCompare !== 0) return divCompare;
+      <div className="space-y-3">
+        {Object.entries(groupedAthletes)
+  .sort(([a], [b]) => {
+    const divCompare = divisionSortKey(a).localeCompare(divisionSortKey(b));
+    if (divCompare !== 0) return divCompare;
 
-          // 2️⃣ If same division, sort by gender (Female first, then Male)
-          const genderOrder = { Female: 0, Male: 1 };
-          const genderA = a.startsWith("Female") ? "Female" : "Male";
-          const genderB = b.startsWith("Female") ? "Female" : "Male";
-          return genderOrder[genderA] - genderOrder[genderB];
-        })
-        .map(([division, names]) => {
-          const filteredNames = showOnlyNinjaU
-            ? names.filter(({ originalDivision }) =>
-                /ninja\s*u(?=[ ,]|$)/i.test(originalDivision)
-              )
-            : names;
+    const genderOrder = { Female: 0, Male: 1 };
+    const genderA = a.startsWith("Female") ? "Female" : "Male";
+    const genderB = b.startsWith("Female") ? "Female" : "Male";
+    return genderOrder[genderA] - genderOrder[genderB];
+  })
+  .map(([division, names]) => {
+    const filteredNames = showOnlyNinjaU
+      ? names.filter(({ originalDivision }) =>
+          /ninja\s*u(?=[ ,]|$)/i.test(originalDivision)
+        )
+      : names;
 
-          if (filteredNames.length === 0) return null;
+    if (filteredNames.length === 0) return null;
 
-          return (
-            <section key={division} className="mb-6">
-              <h2 className="text-xl font-semibold mb-2">
-                {division} ({filteredNames.length})
-              </h2>
-              <ul className="list-disc list-inside">
-                {filteredNames.map(
-                  ({ name, isEmployee, originalDivision }, i) => {
-                    const isNinjaU = /ninja\s*u(?=[ ,]|$)/i.test(
-                      originalDivision
-                    );
-                    return (
-                      <li
-                        key={i}
-                        className={`${isEmployee ? "text-blue-600" : ""} ${
-                          isNinjaU ? "font-bold" : ""
-                        }`}
-                      >
-                        {name}
-                      </li>
-                    );
-                  }
-                )}
-              </ul>
-            </section>
-          );
-        })}
+    return (
+      <div
+        key={division}
+        className="relative text-[#303038] overflow-hidden mb-6 rounded"
+        style={{
+          backgroundImage: `linear-gradient(rgba(255,242,41,0.9), rgba(255,242,41,0.9)), url(/logos/default.png)`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+        }}
+      >
+        <div className="p-4">
+          <h2 className="text-xl font-semibold mb-2">
+            {division} ({filteredNames.length})
+          </h2>
+          <ul className="list-disc list-inside">
+            {filteredNames.map(
+              ({ name, isEmployee, originalDivision }, i) => {
+                const isNinjaU = /ninja\s*u(?=[ ,]|$)/i.test(
+                  originalDivision
+                );
+                return (
+                  <li
+                    key={i}
+                    className={`${isEmployee ? "text-blue-600" : ""} ${
+                      isNinjaU ? "font-bold" : ""
+                    }`}
+                  >
+                    {name}
+                  </li>
+                );
+              }
+            )}
+          </ul>
+        </div>
+      </div>
+    );
+  })}
+
+      </div>
     </main>
   );
 }
