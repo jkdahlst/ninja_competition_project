@@ -84,7 +84,6 @@ export default function Home() {
 
       const uniqueTypes = Array.from(new Set(comps.map((c) => c.type))).sort();
       setLeagues(uniqueLeagues);
-      setTypes(uniqueTypes);
     }
   }
 
