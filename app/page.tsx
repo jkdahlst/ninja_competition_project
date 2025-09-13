@@ -32,32 +32,31 @@ export default function Home() {
     "upcoming"
   );
   const [leagues, setLeagues] = useState<string[]>([]);
-  const [types, setTypes] = useState<string[]>([]);
 
-const [filterText, setFilterText] = useState("");
-const [typeFilter, setTypeFilter] = useState("");
-const [hasMounted, setHasMounted] = useState(false);
+  const [filterText, setFilterText] = useState("");
+  const [typeFilter, setTypeFilter] = useState("");
+  const [hasMounted, setHasMounted] = useState(false);
 
   useEffect(() => {
     fetchCompetitions();
   }, []);
 
-useEffect(() => {
-  setHasMounted(true); // ensures component is mounted before using storage
-  const storedFilterText = sessionStorage.getItem("filterText");
-  if (storedFilterText) setFilterText(storedFilterText);
+  useEffect(() => {
+    setHasMounted(true); // ensures component is mounted before using storage
+    const storedFilterText = sessionStorage.getItem("filterText");
+    if (storedFilterText) setFilterText(storedFilterText);
 
-  const storedTypeFilter = sessionStorage.getItem("typeFilter");
-  if (storedTypeFilter) setTypeFilter(storedTypeFilter);
-}, []);
+    const storedTypeFilter = sessionStorage.getItem("typeFilter");
+    if (storedTypeFilter) setTypeFilter(storedTypeFilter);
+  }, []);
 
-useEffect(() => {
-  if (hasMounted) sessionStorage.setItem("filterText", filterText);
-}, [filterText, hasMounted]);
+  useEffect(() => {
+    if (hasMounted) sessionStorage.setItem("filterText", filterText);
+  }, [filterText, hasMounted]);
 
-useEffect(() => {
-  if (hasMounted) sessionStorage.setItem("typeFilter", typeFilter);
-}, [typeFilter, hasMounted]);
+  useEffect(() => {
+    if (hasMounted) sessionStorage.setItem("typeFilter", typeFilter);
+  }, [typeFilter, hasMounted]);
 
   const [dataLoading, setDataLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -131,7 +130,9 @@ useEffect(() => {
   const filteredCompetitions = competitions
     .filter(({ league, type }) => {
       const leagueMatches = filterText === "" || league === filterText;
-      const typeMatches = typeFilter === "" || type === typeFilter;
+      const typeMatches =
+        typeFilter === "" ||
+        (type && type.toLowerCase().includes(typeFilter.toLowerCase()));
       return leagueMatches && typeMatches;
     })
     .filter((comp) => {
@@ -179,18 +180,13 @@ useEffect(() => {
           ))}
         </select>
 
-        <select
+        <input
+          type="text"
           value={typeFilter}
           onChange={(e) => setTypeFilter(e.target.value)}
-          className="flex-1 p-2 rounded bg-[#303038] text-[#FFF229] focus:outline-none"
-        >
-          <option value="">All Types</option>
-          {types.map((type) => (
-            <option key={type} value={type}>
-              {type}
-            </option>
-          ))}
-        </select>
+          placeholder="Filter by type..."
+          className="flex-1 p-2 rounded bg-[#303038] text-[#FFF229] focus:outline-none placeholder-gray-400"
+        />
 
         <Button
           onClick={() => {
